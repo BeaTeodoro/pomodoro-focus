@@ -14,7 +14,7 @@
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/BeaTeodoro/pomodoro-focus/main/img/Banner.png" alt="Preview do Pomodoro Focus" width="80%" style="border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.2)">
+  <img src="./img/Banner.png" alt="Preview do Pomodoro Focus" width="80%" style="border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.2)">
 </p>
 
 
