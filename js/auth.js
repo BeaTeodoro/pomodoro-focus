@@ -1,25 +1,27 @@
 import { supabase } from "./supabase.js";
 
-//AUTENTICAÇÃO GERAL (Google + Sessão)//
+/* POMODORO FOCUS — AUTENTICAÇÃO GERAL (Google + Sessão) */
 
 // LOGIN COM GOOGLE
 export async function loginWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin + "/perfil.html",
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent",
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "https://pomodoro-focus-bt.vercel.app/perfil.html", // URL exata do seu domínio Vercel
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
-    },
-  });
+    });
 
-  if (error) {
-    console.error("❌ Erro no login com Google:", error.message);
-    alert("Erro ao tentar login com Google: " + error.message);
-  } else {
+    if (error) throw error;
+
     console.log("✅ Redirecionando para autenticação Google...");
+  } catch (err) {
+    console.error("❌ Erro no login com Google:", err.message);
+    alert("Erro ao tentar login com Google: " + err.message);
   }
 }
 
@@ -54,30 +56,44 @@ export async function requireAuth() {
   return session;
 }
 
-// 🔄 Listener de sessão
+// 🔄 Listener de sessão (executa quando o estado muda)
 supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log("🔄 Auth Event:", event);
+  console.log("🔄 Evento de autenticação:", event);
 
+  // Quando o usuário entra
   if (event === "SIGNED_IN" && session?.user) {
-    // Verifica se o perfil existe, senão cria
+    const user = session.user;
+
+    // Verifica se o perfil já existe
     const { data: existing } = await supabase
       .from("profiles")
       .select("id")
-      .eq("id", session.user.id)
+      .eq("id", user.id)
       .maybeSingle();
 
+    // Cria o perfil se não existir
     if (!existing) {
-      await supabase.from("profiles").insert({
-        id: session.user.id,
-        display_name: session.user.user_metadata?.full_name || session.user.email,
-        photo_url: session.user.user_metadata?.avatar_url || null,
+      const { error } = await supabase.from("profiles").insert({
+        id: user.id,
+        display_name: user.user_metadata?.full_name || user.email,
+        photo_url: user.user_metadata?.avatar_url || null,
         theme: "auto",
+        focus_minutes: 25,
+        short_break: 5,
+        long_break: 15,
         created_at: new Date(),
+        updated_at: new Date(),
       });
-      console.log("🆕 Perfil criado automaticamente no Supabase");
+
+      if (error) {
+        console.error("⚠️ Erro ao criar perfil no Supabase:", error.message);
+      } else {
+        console.log("🆕 Perfil criado automaticamente no Supabase");
+      }
     }
   }
 
+  // Quando o usuário sai
   if (event === "SIGNED_OUT") {
     window.location.href = "login.html";
   }
