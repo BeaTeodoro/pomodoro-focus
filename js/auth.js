@@ -9,16 +9,18 @@ const isLocalhost =
   window.location.hostname.includes("localhost") ||
   window.location.hostname.includes("127.0.0.1");
 
-// Redirecionamento automático conforme ambiente
 const REDIRECT_URL = isLocalhost
-  ? "http://127.0.0.1:5500/cadastro.html" // ambiente local
-  : "https://pomodoro-focus-bt.vercel.app/cadastro.html"; // produção (Vercel)
+  ? "http://127.0.0.1:5500/cadastro.html"
+  : "https://pomodoro-focus-bt.vercel.app/cadastro.html";
 
 /* -------------------------
-   LOGIN COM GOOGLE (OAuth)
+   LOGIN COM GOOGLE
 -------------------------- */
 export async function loginWithGoogle() {
   try {
+    // Marca que o usuário iniciou login pelo Google
+    localStorage.setItem("login_method", "google");
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -40,20 +42,16 @@ export async function loginWithGoogle() {
 }
 
 /* -------------------------
-   LOGOUT (SAIR DA CONTA)
+   LOGOUT
 -------------------------- */
 export async function logout() {
   const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error("Erro ao sair:", error.message);
-    alert("Erro ao sair: " + error.message);
-  } else {
-    window.location.href = "index.html";
-  }
+  if (error) console.error("Erro ao sair:", error.message);
+  else window.location.href = "index.html";
 }
 
 /* -------------------------
-   OBTÉM SESSÃO ATUAL
+   SESSÕES E USUÁRIOS
 -------------------------- */
 export async function getSession() {
   const { data, error } = await supabase.auth.getSession();
@@ -61,9 +59,6 @@ export async function getSession() {
   return data?.session || null;
 }
 
-/* -------------------------
-   OBTÉM USUÁRIO ATUAL
--------------------------- */
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
   if (error) console.error("Erro ao obter usuário:", error.message);
@@ -71,7 +66,7 @@ export async function getCurrentUser() {
 }
 
 /* -------------------------
-   EXIGE LOGIN EM PÁGINAS
+   VERIFICAÇÃO DE LOGIN
 -------------------------- */
 export async function requireAuth() {
   const session = await getSession();
@@ -88,50 +83,34 @@ export async function requireAuth() {
 supabase.auth.onAuthStateChange(async (event, session) => {
   console.log("🔄 Evento de autenticação:", event);
 
-  // Quando o usuário entra
   if (event === "SIGNED_IN" && session?.user) {
     const user = session.user;
 
     try {
       // Verifica se o perfil já existe
-      const { data: existing, error: selectError } = await supabase
+      const { data: existing } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (selectError)
-        console.warn("Erro ao verificar perfil:", selectError.message);
-
-      // Cria o perfil se não existir
+      // Cria perfil se ainda não existir
       if (!existing) {
-        const { error: insertError } = await supabase.from("profiles").insert({
+        await supabase.from("profiles").insert({
           id: user.id,
           full_name: user.user_metadata?.full_name || user.email,
           photo_url: user.user_metadata?.avatar_url || null,
           theme: "auto",
-          focus_minutes: 25,
-          short_break: 5,
-          long_break: 15,
           created_at: new Date(),
           updated_at: new Date(),
         });
-
-        if (insertError) {
-          console.error(
-            "⚠️ Erro ao criar perfil no Supabase:",
-            insertError.message
-          );
-        } else {
-          console.log("🆕 Perfil criado automaticamente no Supabase");
-        }
+        console.log("🆕 Perfil criado automaticamente no Supabase");
       }
     } catch (err) {
-      console.error("❌ Erro ao processar perfil:", err.message);
+      console.error("❌ Erro ao criar perfil:", err.message);
     }
   }
 
-  // Quando o usuário sai
   if (event === "SIGNED_OUT") {
     window.location.href = "login.html";
   }

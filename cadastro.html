@@ -142,6 +142,36 @@
   <script type="module" src="js/cadastro.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
+  <script type="module">
+    import { supabase } from "./js/supabase.js";
+
+    async function preencherDadosGoogle() {
+      const method = localStorage.getItem("login_method");
+      if (method !== "google") return; // só executa se veio do login com Google
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      console.log("👤 Usuário logado com Google:", user);
+
+      // Preenche automaticamente o formulário
+      document.getElementById("fullName").value = user.user_metadata.full_name || "";
+      document.getElementById("signupEmail").value = user.email || "";
+
+      // Define a imagem de perfil (se disponível)
+      if (user.user_metadata.avatar_url) {
+        const preview = document.getElementById("photoPreview");
+        preview.src = user.user_metadata.avatar_url;
+      }
+
+      // Remove flag do localStorage (evita repetir)
+      localStorage.removeItem("login_method");
+    }
+
+    // Executa assim que o DOM estiver pronto
+    document.addEventListener("DOMContentLoaded", preencherDadosGoogle);
+  </script>
+
 </body>
 
 </html>
