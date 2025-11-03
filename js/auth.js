@@ -4,27 +4,29 @@ import { supabase } from "./supabase.js";
    🍅 POMODORO FOCUS — AUTENTICAÇÃO GERAL (GOOGLE + SESSÃO)
    ========================================================= */
 
-// Detecta ambiente atual
+/* -------------------------
+   DETECTA AMBIENTE ATUAL
+-------------------------- */
 const isLocalhost =
   window.location.hostname.includes("localhost") ||
   window.location.hostname.includes("127.0.0.1");
 
 const REDIRECT_URL = isLocalhost
-  ? "http://127.0.0.1:5500/cadastro.html"
-  : "https://pomodoro-focus-bt.vercel.app/cadastro.html";
+  ? "http://127.0.0.1:5500/index.html"
+  : "https://pomodoro-focus-bt.vercel.app/index.html";
 
 /* -------------------------
    LOGIN COM GOOGLE
 -------------------------- */
 export async function loginWithGoogle() {
   try {
-    // Marca que o usuário iniciou login pelo Google
+    // Marca método de login
     localStorage.setItem("login_method", "google");
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: REDIRECT_URL,
+        redirectTo: REDIRECT_URL, // ✅ agora redireciona corretamente para index.html
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -33,7 +35,6 @@ export async function loginWithGoogle() {
     });
 
     if (error) throw error;
-
     console.log("✅ Redirecionando para autenticação Google...");
   } catch (err) {
     console.error("❌ Erro no login com Google:", err.message);
@@ -46,12 +47,16 @@ export async function loginWithGoogle() {
 -------------------------- */
 export async function logout() {
   const { error } = await supabase.auth.signOut();
-  if (error) console.error("Erro ao sair:", error.message);
-  else window.location.href = "index.html";
+  if (error) {
+    console.error("Erro ao sair:", error.message);
+    alert("Erro ao sair: " + error.message);
+  } else {
+    window.location.href = "index.html";
+  }
 }
 
 /* -------------------------
-   SESSÕES E USUÁRIOS
+   GERENCIA SESSÃO E USUÁRIO
 -------------------------- */
 export async function getSession() {
   const { data, error } = await supabase.auth.getSession();
@@ -66,7 +71,7 @@ export async function getCurrentUser() {
 }
 
 /* -------------------------
-   VERIFICAÇÃO DE LOGIN
+   REQUER LOGIN (PÁGINAS PROTEGIDAS)
 -------------------------- */
 export async function requireAuth() {
   const session = await getSession();
@@ -78,13 +83,13 @@ export async function requireAuth() {
 }
 
 /* -------------------------
-   MONITORAMENTO DE SESSÃO
+   MONITORAMENTO DE SESSÃO (EVENTOS DE LOGIN/LOGOUT)
 -------------------------- */
 supabase.auth.onAuthStateChange(async (event, session) => {
   console.log("🔄 Evento de autenticação:", event);
 
   if (event === "SIGNED_IN" && session?.user) {
-    const user = session.user;
+    const { user } = session;
 
     try {
       // Verifica se o perfil já existe
@@ -96,21 +101,34 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
       // Cria perfil se ainda não existir
       if (!existing) {
-        await supabase.from("profiles").insert({
+        const { error: insertError } = await supabase.from("profiles").insert({
           id: user.id,
+          display_name: user.user_metadata?.full_name || user.email,
           full_name: user.user_metadata?.full_name || user.email,
           photo_url: user.user_metadata?.avatar_url || null,
           theme: "auto",
+          focus_minutes: 25,
+          short_break: 5,
+          long_break: 15,
           created_at: new Date(),
           updated_at: new Date(),
         });
-        console.log("🆕 Perfil criado automaticamente no Supabase");
+
+        if (insertError) {
+          console.error("⚠️ Erro ao criar perfil:", insertError.message);
+        } else {
+          console.log("🆕 Perfil criado automaticamente no Supabase");
+        }
       }
     } catch (err) {
-      console.error("❌ Erro ao criar perfil:", err.message);
+      console.error("❌ Erro ao verificar/criar perfil:", err.message);
     }
+
+    // ✅ Redireciona automaticamente para a página inicial
+    window.location.href = "index.html";
   }
 
+  // Logout → volta pro login
   if (event === "SIGNED_OUT") {
     window.location.href = "login.html";
   }
