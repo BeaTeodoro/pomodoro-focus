@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Tema inicial -->
+  <script>
+    (() => {
+      try {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Focus | Música</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="img/favicon.png" alt="Logo Pomodoro" />
+      <h1>Pomodoro Focus</h1>
+    </div>
+
+    <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu">
+      <i class="ph ph-list"></i>
+    </button>
+
+    <div class="header-actions">
+      <div class="theme-switch">
+        <i class="ph ph-sun"></i>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+        <i class="ph ph-moon"></i>
+      </div>
+      <a href="login.html" class="btn-login">
+        <i class="ph ph-sign-in"></i> Entrar
+      </a>
+    </div>
+  </header>
+
+  <!-- Navegação -->
+  <nav class="subnav" id="mobile-menu">
+    <div class="tabs">
+      <a href="index.html" class="tab">Como Funciona</a>
+      <a href="cronometro.html" class="tab">Cronômetro</a>
+      <a href="musica.html" class="tab active">Música</a>
+      <a href="estatisticas.html" class="tab">Estatísticas</a>
+    </div>
+  </nav>
+
+  <main class="musica-page">
+    <!-- Conexão com Spotify -->
+    <section class="section-card spotify-connect">
+      <div class="spotify-icon">
+        <i class="ph ph-music-notes"></i>
+      </div>
+      <h2>Conectar com Spotify</h2>
+      <p>Conecte sua conta Spotify para ouvir músicas durante suas sessões Pomodoro.</p>
+
+      <button id="spotify-login-btn" type="button" class="btn primary">
+        <i class="ph ph-spotify-logo"></i> Conectar Spotify
+      </button>
+
+      <p class="info-text">Você será redirecionado para o Spotify para autorizar o acesso.</p>
+    </section>
+
+    <!-- Player completo -->
+    <section class="section-card spotify-player" id="player-section" style="display: none;">
+      <h3><i class="ph ph-speaker-high"></i> Reprodutor Spotify</h3>
+      <p id="player-status">Conectando ao Spotify...</p>
+
+      <!-- Busca -->
+      <div class="spotify-search">
+        <label for="search-track"><i class="ph ph-magnifying-glass"></i> Buscar músicas ou artistas</label>
+        <div class="search-box">
+          <input type="text" id="search-track" placeholder="Digite o nome da música ou artista..." />
+          <button id="search-btn" class="btn outline"><i class="ph ph-magnifying-glass"></i></button>
+        </div>
+        <ul id="search-results" class="search-results"></ul>
+      </div>
+
+      <!-- Playlists recomendadas -->
+      <section class="playlist-section">
+        <h3><i class="ph ph-list-music"></i> Playlists Recomendadas</h3>
+        <p>Escolha uma playlist para reproduzir durante seu foco.</p>
+
+        <div class="playlist-list">
+          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DX4sWSpwq3LiO">
+            <i class="ph ph-brain"></i> Deep Focus
+          </button>
+          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DWZZbwlv3Vmtr">
+            <i class="ph ph-piano-keys"></i> Peaceful Piano
+          </button>
+          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DWT4wKkPLIYjv">
+            <i class="ph ph-waveform"></i> Lo-Fi Beats
+          </button>
+          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DX4E3UdUs7fUx">
+            <i class="ph ph-leaf"></i> Ambient Chill
+          </button>
+        </div>
+      </section>
+
+
+      <!-- Player principal -->
+      <div class="player-container">
+        <img id="track-image" src="img/default-cover.png" alt="Capa da música" class="track-cover" />
+        <div class="track-details">
+          <p id="track-title" class="track-title">Título da música</p>
+          <p id="track-artist" class="track-artist">Artista</p>
+
+          <div class="progress-bar">
+            <div id="progress-fill"></div>
+          </div>
+
+          <div class="player-controls">
+            <button id="prev-btn" class="btn outline"><i class="ph ph-skip-back"></i></button>
+            <button id="play-pause-btn" class="btn primary"><i class="ph ph-play"></i></button>
+            <button id="next-btn" class="btn outline"><i class="ph ph-skip-forward"></i></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content container">
+      <div class="mini-player-footer">
+        <!-- Ícone -->
+        <i class="ph ph-spotify-logo spotify-icon"></i>
+
+        <!-- Controles -->
+        <div class="player-buttons">
+          <button id="mini-prev"><i class="ph ph-skip-back"></i></button>
+          <button id="mini-play" class="play-btn"><i class="ph ph-play"></i></button>
+          <button id="mini-next"><i class="ph ph-skip-forward"></i></button>
+        </div>
+
+        <!-- Faixa atual -->
+        <div class="mini-track-info">
+          <p class="track-title">—</p>
+          <span class="track-artist">—</span>
+        </div>
+
+        <!-- Progresso -->
+        <div class="mini-progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+
+      <p class="footer-center">
+        © 2025 <strong>Pomodoro Focus</strong> — Desenvolvido por <strong>Beatriz Teodoro</strong> 🍅
+      </p>
+
+      <div class="social-links">
+        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn">
+          <i class="ph ph-linkedin-logo"></i>
+        </a>
+        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub">
+          <i class="ph ph-github-logo"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/theme.js"></script>
+  <script src="js/header.js"></script>
+  <script type="module" src="js/spotify.js"></script>
+  <script type="module" src="js/miniPlayer.js"></script>
+</body>
+
+</html>

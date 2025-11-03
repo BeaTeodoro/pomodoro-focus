@@ -1,0 +1,208 @@
+@use 'variables' as v;
+
+/* Página de cadastro */
+.cadastro-page {
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  transition: background v.$transition, color v.$transition;
+
+  .cadastro-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    box-shadow: v.$shadow-soft;
+    width: 100%;
+    max-width: 450px;
+    animation: fadeIn 0.4s ease;
+
+    h2 {
+      text-align: center;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+
+    /* Foto de perfil */
+    .cadastro-avatar {
+      text-align: center;
+      margin-bottom: 1.8rem;
+
+      .photo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+
+        img {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 3px solid var(--primary);
+          background: var(--bg-card);
+          box-shadow: v.$shadow-soft;
+          transition: transform 0.3s ease;
+
+          &:hover { transform: scale(1.05); }
+        }
+
+        .change-photo {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          padding: 0.6rem 1.2rem;
+          border-radius: 0.6rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.3s ease;
+
+          i { font-size: 1.1rem; }
+          &:hover { background: var(--primary-dark); }
+        }
+      }
+    }
+
+    /* Formulário */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: 0.9rem;
+        color: var(--text);
+        margin-bottom: 0.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--accent-soft);
+        background: var(--bg-card);
+        color: var(--text);
+        transition: all 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+        }
+      }
+    }
+
+    /* Botão principal */
+    .btn-login {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 1.2rem;
+      border-radius: 0.6rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+
+      &:hover:not(:disabled) { background: var(--primary-dark); }
+
+      &.loading {
+        opacity: 0.8;
+        cursor: wait;
+      }
+
+      .loading-spinner {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        animation: spin 1.1s linear infinite;
+
+        i {
+          color: #fff;
+          margin-left: 0.3rem;
+        }
+      }
+    }
+
+    /* Link para login */
+    .login-link {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+
+      a {
+        color: var(--primary);
+        font-weight: 600;
+        transition: color 0.2s;
+
+        &:hover { color: var(--primary-dark); }
+      }
+    }
+  }
+}
+
+/* Tema escuro */
+[data-theme='dark'] {
+  .cadastro-page {
+    background: var(--bg-main);
+
+    .cadastro-card {
+      background: var(--bg-card);
+      color: var(--text);
+
+      .form-group input {
+        background: #2f2a2a;
+        border-color: #3b3434;
+        color: #fff;
+      }
+
+      .change-photo {
+        background: var(--primary);
+        &:hover { background: var(--primary-dark); }
+      }
+    }
+  }
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .cadastro-card {
+    padding: 1.5rem;
+
+    .photo-container img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .change-photo {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+    }
+  }
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Tema inicial -->
+  <script>
+    (() => {
+      try {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Focus | Como Funciona</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="img/favicon.png" alt="Logo Pomodoro" />
+      <h1>Pomodoro Focus</h1>
+    </div>
+
+    <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu">
+      <i class="ph ph-list"></i>
+    </button>
+
+    <div class="header-actions">
+      <div class="theme-switch">
+        <i class="ph ph-sun"></i>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+        <i class="ph ph-moon"></i>
+      </div>
+
+      <a href="login.html" class="btn-login">
+        <i class="ph ph-sign-in"></i> Entrar
+      </a>
+    </div>
+  </header>
+
+  <!-- Navegação -->
+  <nav class="subnav" id="mobile-menu">
+    <div class="tabs">
+      <a href="index.html" class="tab active">Como Funciona</a>
+      <a href="cronometro.html" class="tab">Cronômetro</a>
+      <a href="musica.html" class="tab">Música</a>
+      <a href="estatisticas.html" class="tab">Estatísticas</a>
+    </div>
+  </nav>
+
+  <!-- Conteúdo principal -->
+  <main class="home">
+    <!-- Banner -->
+    <section class="intro">
+      <div class="overlay">
+        <h2 class="title">Técnica Pomodoro</h2>
+        <p class="subtitle">
+          Um método simples e eficaz para aumentar sua produtividade e manter o foco.
+        </p>
+      </div>
+    </section>
+
+    <!-- O que é -->
+    <section class="section-card container">
+      <h3><i class="ph ph-target"></i> O que é a Técnica Pomodoro?</h3>
+      <p>
+        A Técnica Pomodoro foi desenvolvida por Francesco Cirillo no final dos anos 1980.
+        É um método de gerenciamento de tempo que usa um cronômetro para dividir o trabalho em blocos
+        de 25 minutos, intercalados com breves pausas.
+      </p>
+      <p>
+        O nome “Pomodoro” vem do cronômetro de cozinha em forma de tomate que Cirillo utilizava
+        durante seus estudos universitários.
+      </p>
+    </section>
+
+    <!-- Como funciona -->
+    <section class="section-card container how-it-works">
+      <h3><i class="ph ph-clock"></i> Como Funciona?</h3>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="badge">1</div>
+          <div>
+            <strong>Escolha uma tarefa</strong>
+            <p>Defina claramente o que deseja realizar.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="badge">2</div>
+          <div>
+            <strong>Configure o timer</strong>
+            <p>Tradicionalmente 25 minutos (personalizável).</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="badge">3</div>
+          <div>
+            <strong>Trabalhe com foco</strong>
+            <p>Concentre-se apenas na tarefa escolhida.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="badge">4</div>
+          <div>
+            <strong>Faça uma pausa</strong>
+            <p>5 minutos de descanso após cada sessão.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="badge">5</div>
+          <div>
+            <strong>Anote seus insights</strong>
+            <p>Registre o que foi feito e aprendido.</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="badge">6</div>
+          <div>
+            <strong>Repita o ciclo</strong>
+            <p>A cada 4 pomodoros, faça uma pausa mais longa.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefícios -->
+    <section class="section-card container benefits">
+      <h3><i class="ph ph-brain"></i> Benefícios da Técnica</h3>
+      <div class="benefits-grid">
+        <div class="benefit">
+          <div class="icon-wrapper"><i class="ph ph-check-circle"></i></div>
+          <h4>Melhora o Foco</h4>
+          <p>Períodos curtos ajudam a manter a concentração alta.</p>
+        </div>
+
+        <div class="benefit">
+          <div class="icon-wrapper"><i class="ph ph-coffee"></i></div>
+          <h4>Reduz a Fadiga</h4>
+          <p>Pausas regulares previnem o esgotamento mental.</p>
+        </div>
+
+        <div class="benefit">
+          <div class="icon-wrapper"><i class="ph ph-chart-line-up"></i></div>
+          <h4>Aumenta a Produtividade</h4>
+          <p>Senso de urgência melhora a eficiência.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dicas -->
+    <section class="section-card container tips-section">
+      <h3><i class="ph ph-lightbulb"></i> Dicas para o Sucesso</h3>
+      <ul class="tips-list">
+        <li><strong>Elimine distrações:</strong> desligue notificações e mantenha o foco.</li>
+        <li><strong>Respeite as pausas:</strong> use o descanso para relaxar verdadeiramente.</li>
+        <li><strong>Ajuste os tempos:</strong> personalize conforme sua necessidade.</li>
+        <li><strong>Registre seu progresso:</strong> anote insights e conquistas.</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content container">
+      <!-- Mini player -->
+      <div class="mini-player-footer">
+        <i class="ph ph-spotify-logo spotify-icon"></i>
+
+        <div class="player-buttons">
+          <button id="mini-prev"><i class="ph ph-skip-back"></i></button>
+          <button id="mini-play" class="play-btn"><i class="ph ph-play"></i></button>
+          <button id="mini-next"><i class="ph ph-skip-forward"></i></button>
+        </div>
+
+        <div class="mini-track-info">
+          <p class="track-title">Título da música</p>
+          <span class="track-artist">Artista</span>
+        </div>
+
+        <div class="mini-progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Texto central -->
+      <p class="footer-center">
+        © 2025 <strong>Pomodoro Focus</strong> — Desenvolvido por <strong>Beatriz Teodoro</strong> 🍅
+      </p>
+
+      <!-- Redes -->
+      <div class="social-links">
+        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn">
+          <i class="ph ph-linkedin-logo"></i>
+        </a>
+        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub">
+          <i class="ph ph-github-logo"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/theme.js"></script>
+  <script src="js/header.js"></script>
+  <script type="module" src="js/spotify.js"></script>
+  <script type="module" src="js/miniPlayer.js"></script>
+</body>
+
+</html>

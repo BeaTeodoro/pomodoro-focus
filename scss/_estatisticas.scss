@@ -1,0 +1,220 @@
+@use 'variables' as v;
+
+/* Estatísticas */
+.stats-page {
+  background-color: var(--bg-main);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 4rem 1rem;
+  transition: background v.$transition, color v.$transition;
+
+  /* Seção principal */
+  .stats-section {
+    text-align: center;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    h2 {
+      color: var(--text);
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s ease forwards 0.2s;
+
+      i {
+        font-size: 2rem;
+        color: var(--primary);
+      }
+    }
+
+    /* Cards de dados */
+    .stats-cards {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      .card {
+        flex: 1 1 0;
+        min-width: 260px;
+        max-width: 320px;
+        background-color: var(--bg-card);
+        border: 1px solid var(--accent-soft);
+        border-radius: v.$radius;
+        padding: 1.8rem;
+        box-shadow: v.$shadow-soft;
+        transition: all v.$transition;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: fadeUp 0.8s ease forwards;
+
+        &:nth-child(1) { animation-delay: 0.3s; }
+        &:nth-child(2) { animation-delay: 0.5s; }
+        &:nth-child(3) { animation-delay: 0.7s; }
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        h3 {
+          color: var(--text);
+          font-size: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          margin-bottom: 1rem;
+
+          i {
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+          }
+        }
+
+        p {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: var(--text2, var(--text));
+        }
+      }
+    }
+
+    /* Gráfico */
+    .charts {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background-color: var(--bg-card);
+      border-radius: 12px;
+      box-shadow: v.$shadow-soft;
+      border: 1px solid var(--accent-soft);
+      transition: all v.$transition;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 0.9s ease forwards 0.9s;
+
+      canvas {
+        width: 100%;
+        height: 380px;
+      }
+    }
+  }
+}
+
+/* Tema escuro */
+[data-theme="dark"] {
+  .stats-page {
+    background-color: #1f1a1a;
+    color: #eaeaea;
+
+    .stats-section {
+      h2 {
+        color: #eaeaea;
+        i { color: #b98255; }
+      }
+
+      .stats-cards .card {
+        background-color: #262121;
+        border-color: #332d2d;
+
+        h3, p { color: #f0f0f0; }
+
+        &:hover {
+          box-shadow: 0 8px 20px rgba(141, 43, 39, 0.25);
+        }
+      }
+
+      .charts {
+        background-color: #262121;
+        border-color: #332d2d;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+    }
+  }
+}
+
+/* Animação */
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .stats-page {
+    padding: 3rem 1rem;
+
+    .stats-section {
+      h2 { font-size: 1.6rem; }
+
+      .stats-cards {
+        gap: 1.2rem;
+        padding: 0 1rem;
+
+        .card {
+          min-width: 230px;
+          padding: 1.5rem;
+          font-size: 0.9rem;
+        }
+      }
+
+      .charts {
+        padding: 1rem;
+
+        canvas { height: 320px; }
+      }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-page {
+    .stats-section {
+      h2 {
+        font-size: 1.4rem;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      .stats-cards {
+        flex-wrap: nowrap;
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+
+        .card {
+          min-width: 240px;
+          max-width: 280px;
+          font-size: 0.9rem;
+        }
+      }
+
+      .charts {
+        margin-top: 2rem;
+        padding: 0.8rem;
+
+        canvas { height: 280px; }
+      }
+    }
+  }
+}
