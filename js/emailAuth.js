@@ -1,8 +1,6 @@
 import { supabase } from "./supabase.js";
 
-/* =========================================================
-   🍅 POMODORO FOCUS — AUTENTICAÇÃO POR E-MAIL
-   ========================================================= */
+// AUTENTICAÇÃO POR E-MAIL//
 
 export async function loginWithEmail(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -62,7 +60,6 @@ export async function signUpWithEmailAndPhoto(email, password, fullName, locatio
       console.error(insertError);
     } else {
       alert("✅ Conta criada com sucesso!");
-      window.location.href = "perfil.html";
     }
 
     return data;

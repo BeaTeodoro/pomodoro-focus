@@ -3,7 +3,7 @@ const totalFocusEl = document.getElementById("total-focus");
 const pomodorosDoneEl = document.getElementById("pomodoros-done");
 const lastSessionEl = document.getElementById("last-session");
 
-// Recupera dados reais do localStorage
+// Dados do localStorage
 let stats = JSON.parse(localStorage.getItem("pomodoro_stats")) || {
   totalFocus: 0,
   pomodoros: 0,
@@ -11,25 +11,25 @@ let stats = JSON.parse(localStorage.getItem("pomodoro_stats")) || {
   history: []
 };
 
-// Atualiza elementos da tela
+// Atualiza interface
 function updateStatsUI() {
   totalFocusEl.textContent = `${stats.totalFocus} min`;
   pomodorosDoneEl.textContent = stats.pomodoros;
   lastSessionEl.textContent = stats.lastSession || "—";
 }
 
-// Renderiza gráfico
+// Gráfico
 function renderChart() {
-  const ctx = document.getElementById("focusChart").getContext("2d");
+  const ctx = document.getElementById("focusChart");
+  if (!ctx) return;
 
-  if (window.focusChartInstance) {
-    window.focusChartInstance.destroy();
-  }
+  const canvas = ctx.getContext("2d");
+  if (window.focusChartInstance) window.focusChartInstance.destroy();
 
   const labels = stats.history.map(h => h.date);
   const values = stats.history.map(h => h.minutes);
 
-  window.focusChartInstance = new Chart(ctx, {
+  window.focusChartInstance = new Chart(canvas, {
     type: "bar",
     data: {
       labels,
@@ -53,12 +53,27 @@ function renderChart() {
           grid: { display: false }
         }
       },
-      plugins: {
-        legend: { display: false }
-      }
+      plugins: { legend: { display: false } }
     }
   });
 }
 
-updateStatsUI();
-renderChart();
+// Scroll lateral suave (mobile)
+function enableSmoothScroll() {
+  const statsContainer = document.querySelector(".stats-cards");
+  if (!statsContainer) return;
+
+  statsContainer.addEventListener("wheel", (e) => {
+    if (window.innerWidth < 768) {
+      e.preventDefault();
+      statsContainer.scrollLeft += e.deltaY * 0.8;
+    }
+  });
+}
+
+// Inicialização
+document.addEventListener("DOMContentLoaded", () => {
+  updateStatsUI();
+  renderChart();
+  enableSmoothScroll();
+});

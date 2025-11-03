@@ -2346,35 +2346,35 @@ button {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: stretch;
-      -ms-flex-align: stretch;
-          align-items: stretch;
-  -ms-flex-wrap: nowrap;
-      flex-wrap: nowrap;
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: 1rem;
   overflow-x: auto;
+  -ms-scroll-snap-type: x mandatory;
+      scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem 0 1rem 0.5rem;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  /* remove scrollbar visualmente */
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Desktop */
 }
 .stats-page .stats-section .stats-cards::-webkit-scrollbar {
   display: none;
 }
 .stats-page .stats-section .stats-cards .card {
-  -webkit-box-flex: 1;
-      -ms-flex: 1 1 0px;
-          flex: 1 1 0;
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 85%;
+          flex: 0 0 85%;
   min-width: 260px;
-  max-width: 320px;
   background-color: var(--bg-card);
   border: 1px solid var(--accent-soft);
   border-radius: 10px;
-  padding: 1.8rem;
+  padding: 1.6rem;
   -webkit-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
           box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  scroll-snap-align: start;
   -webkit-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
   text-align: center;
@@ -2383,6 +2383,7 @@ button {
           transform: translateY(30px);
   -webkit-animation: fadeUp 0.8s ease forwards;
           animation: fadeUp 0.8s ease forwards;
+  /* primeiro card com destaque */
 }
 .stats-page .stats-section .stats-cards .card:nth-child(1) {
   -webkit-animation-delay: 0.3s;
@@ -2395,6 +2396,13 @@ button {
 .stats-page .stats-section .stats-cards .card:nth-child(3) {
   -webkit-animation-delay: 0.7s;
           animation-delay: 0.7s;
+}
+.stats-page .stats-section .stats-cards .card:first-child {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 0 90%;
+          flex: 0 0 90%;
+  background-color: color-mix(in srgb, var(--primary) 10%, var(--bg-card));
+  border-color: var(--primary-soft);
 }
 .stats-page .stats-section .stats-cards .card:hover {
   -webkit-transform: translateY(-4px);
@@ -2425,6 +2433,30 @@ button {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--text2, var(--text));
+}
+@media (min-width: 768px) {
+  .stats-page .stats-section .stats-cards {
+    overflow-x: visible;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    padding: 0;
+  }
+  .stats-page .stats-section .stats-cards .card {
+    -webkit-box-flex: 1;
+        -ms-flex: 1 1 260px;
+            flex: 1 1 260px;
+    max-width: 300px;
+    scroll-snap-align: unset;
+  }
+  .stats-page .stats-section .stats-cards .card:first-child {
+    -webkit-box-flex: 1;
+        -ms-flex: 1 1 260px;
+            flex: 1 1 260px;
+    background-color: var(--bg-card);
+  }
 }
 .stats-page .stats-section .charts {
   max-width: 800px;

@@ -1,18 +1,17 @@
 import { supabase } from "./supabase.js";
 
-/* =========================================================
-   🍅 POMODORO FOCUS — AUTENTICAÇÃO GOOGLE E CONTROLE DE SESSÃO
-   ========================================================= */
+//AUTENTICAÇÃO GERAL (Google + Sessão)//
 
-/**
- * LOGIN COM GOOGLE (OAuth)
- */
+// LOGIN COM GOOGLE
 export async function loginWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      // Redireciona de volta ao site após login
       redirectTo: window.location.origin + "/perfil.html",
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
     },
   });
 
@@ -24,70 +23,61 @@ export async function loginWithGoogle() {
   }
 }
 
-/**
- * LOGOUT (encerra a sessão)
- */
+// LOGOUT
 export async function logout() {
   const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.error("Erro ao sair:", error.message);
-    alert("Erro ao sair: " + error.message);
-  } else {
-    alert("Sessão encerrada com sucesso!");
-    window.location.href = "index.html";
-  }
+  if (error) console.error("Erro ao sair:", error.message);
+  else window.location.href = "index.html";
 }
 
-/**
- * OBTÉM A SESSÃO ATUAL
- */
+// OBTÉM SESSÃO ATUAL
 export async function getSession() {
   const { data, error } = await supabase.auth.getSession();
-
-  if (error) {
-    console.error("Erro ao buscar sessão:", error.message);
-    return null;
-  }
-
-  return data.session;
+  if (error) console.error("Erro ao buscar sessão:", error.message);
+  return data?.session || null;
 }
 
-/**
- * OBTÉM O USUÁRIO ATUAL LOGADO
- */
+// OBTÉM USUÁRIO ATUAL
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
-
-  if (error) {
-    console.error("Erro ao obter usuário:", error.message);
-    return null;
-  }
-
-  return data.user;
+  if (error) console.error("Erro ao obter usuário:", error.message);
+  return data?.user || null;
 }
 
-/**
- * EXIGE LOGIN EM PÁGINAS PROTEGIDAS
- * Exemplo: usar no início do perfil.html
- */
+// GARANTE LOGIN EM PÁGINAS PROTEGIDAS
 export async function requireAuth() {
   const session = await getSession();
-
   if (!session) {
-    alert("⚠️ É necessário fazer login para acessar esta página.");
+    alert("⚠️ Faça login para acessar esta página.");
     window.location.href = "login.html";
   }
-
   return session;
 }
 
-/**
- * LISTENER — MONITORA ALTERAÇÕES DE SESSÃO (opcional)
- * Pode ser usado para atualizar UI em tempo real quando o usuário logar/sair.
- */
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log("🔄 Evento de autenticação:", event);
+// 🔄 Listener de sessão
+supabase.auth.onAuthStateChange(async (event, session) => {
+  console.log("🔄 Auth Event:", event);
+
+  if (event === "SIGNED_IN" && session?.user) {
+    // Verifica se o perfil existe, senão cria
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (!existing) {
+      await supabase.from("profiles").insert({
+        id: session.user.id,
+        display_name: session.user.user_metadata?.full_name || session.user.email,
+        photo_url: session.user.user_metadata?.avatar_url || null,
+        theme: "auto",
+        created_at: new Date(),
+      });
+      console.log("🆕 Perfil criado automaticamente no Supabase");
+    }
+  }
+
   if (event === "SIGNED_OUT") {
     window.location.href = "login.html";
   }
