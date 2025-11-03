@@ -1780,6 +1780,11 @@ button {
      object-fit: cover;
   -webkit-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  -webkit-transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease;
+}
+.musica-page .spotify-player .player-container .track-cover.updating {
+  opacity: 0.3;
 }
 .musica-page .spotify-player .player-container .track-details {
   -webkit-box-flex: 1;

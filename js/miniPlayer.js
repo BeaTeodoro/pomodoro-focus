@@ -1,4 +1,6 @@
-// Mini Player do Spotify — sincronizado com o player global
+// ===============================
+// MINI PLAYER — SINCRONIZADO COM SPOTIFY
+// ===============================
 
 import {
   initSpotifyPlayer,
@@ -13,41 +15,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleEl = document.querySelector(".track-title");
   const artistEl = document.querySelector(".track-artist");
   const playBtn = document.querySelector(".play-btn i");
-  const prevBtn = document.querySelector(".ph-skip-back").parentElement;
-  const nextBtn = document.querySelector(".ph-skip-forward").parentElement;
+  const prevBtn = document.querySelector(".ph-skip-back")?.parentElement;
+  const nextBtn = document.querySelector(".ph-skip-forward")?.parentElement;
   const progressFill = document.querySelector(".mini-progress-bar .progress-fill");
+
+  // Se o player global não estiver ativo, não dá erro
+  if (!titleEl || !artistEl || !playBtn) return;
 
   initSpotifyPlayer();
 
   // Atualiza informações da faixa
   onTrackChange((track) => {
     if (!track) return;
-
     titleEl.textContent = track.name || "—";
     artistEl.textContent = track.artist || "—";
     playBtn.className = track.isPlaying ? "ph ph-pause" : "ph ph-play";
-
-    const wrapper = titleEl.closest(".mini-track-info");
-    wrapper.classList.remove("scrolling");
-
-    setTimeout(() => {
-      if (titleEl.scrollWidth > wrapper.clientWidth) {
-        wrapper.classList.add("scrolling");
-      }
-    }, 150);
   });
 
-  // Controles do player
-  prevBtn.addEventListener("click", previousTrack);
-  nextBtn.addEventListener("click", nextTrack);
-  playBtn.parentElement.addEventListener("click", playPause);
+  // Controles
+  prevBtn?.addEventListener("click", previousTrack);
+  nextBtn?.addEventListener("click", nextTrack);
+  playBtn?.parentElement?.addEventListener("click", playPause);
 
-  // Atualiza a barra de progresso
+  // Barra de progresso
   let progressInterval;
 
   onPlayerStateChange((state) => {
     if (!state) return;
-
     const { position, duration, paused } = state;
     updateProgress(position, duration);
 
@@ -64,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Atualiza a porcentagem da barra
 function updateProgress(position, duration) {
   const fill = document.querySelector(".mini-progress-bar .progress-fill");
   if (!fill || !duration) return;

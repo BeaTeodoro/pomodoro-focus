@@ -1,9 +1,14 @@
-// Autenticação e inicialização do Spotify
+// ===============================
+// SPOTIFY — AUTENTICAÇÃO E INICIALIZAÇÃO
+// ===============================
 
 import { initSpotifyPlayer } from "./spotifyController.js";
 
 const clientId = "5b160d486adf43b490858c6bde7f521b";
-const redirectUri = "http://127.0.0.1:5500/musica.html";
+
+// ✅ Redirecionamento para o domínio Vercel
+const redirectUri = "https://pomodoro-focus-bt.vercel.app/musica.html";
+
 const scopes = [
   "user-read-private",
   "user-read-email",
@@ -16,7 +21,9 @@ const scopes = [
 
 const AUTH_PROXY = "https://spotify-auth-proxy.vercel.app/api/token";
 
-// Login
+// -------------------------------
+// LOGIN DO SPOTIFY
+// -------------------------------
 function loginSpotify() {
   const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
     redirectUri
@@ -24,7 +31,9 @@ function loginSpotify() {
   window.location.href = authUrl;
 }
 
-// Troca código por token
+// -------------------------------
+// TROCA DE CÓDIGO POR TOKEN
+// -------------------------------
 async function exchangeCodeForToken(code) {
   try {
     const res = await fetch(
@@ -34,6 +43,7 @@ async function exchangeCodeForToken(code) {
 
     if (!data.access_token) {
       console.error("Erro ao trocar código:", data);
+      alert("Falha na autenticação com o Spotify.");
       return;
     }
 
@@ -47,7 +57,9 @@ async function exchangeCodeForToken(code) {
   }
 }
 
-// Verifica autenticação existente
+// -------------------------------
+// VERIFICA AUTENTICAÇÃO EXISTENTE
+// -------------------------------
 function checkSpotifyAuth() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
@@ -60,11 +72,13 @@ function checkSpotifyAuth() {
     renderSpotifyConnected(token);
     initSpotifyPlayer();
   } else {
-    console.log("Nenhum token Spotify encontrado.");
+    console.warn("Spotify offline: nenhum token encontrado.");
   }
 }
 
-// Renderiza usuário autenticado
+// -------------------------------
+// RENDERIZA USUÁRIO CONECTADO
+// -------------------------------
 async function renderSpotifyConnected(token) {
   const section = document.querySelector(".spotify-connect");
   if (!section) return;
@@ -79,9 +93,9 @@ async function renderSpotifyConnected(token) {
       <div class="connected" style="text-align:center;">
         <i class="ph ph-check-circle" style="font-size:3rem; color:#1db954;"></i>
         <h2>Conectado ao Spotify</h2>
-        <p>Bem-vindo(a), <strong>${data.display_name}</strong></p>
+        <p>Bem-vindo(a), <strong>${data.display_name || "usuário"}</strong></p>
         <img
-          src="${data.images?.[0]?.url || "img/default-user.png"}"
+          src="${data.images?.[0]?.url || "img/default-avatar.svg"}"
           alt="Foto de perfil"
           style="width:100px;height:100px;border-radius:50%;border:3px solid #1db954;margin:1rem auto;">
         <button id="spotify-logout-btn" class="btn outline">
@@ -94,53 +108,24 @@ async function renderSpotifyConnected(token) {
       .getElementById("spotify-logout-btn")
       .addEventListener("click", logoutSpotify);
   } catch (err) {
-    console.error("Erro ao conectar:", err);
+    console.error("Erro ao conectar ao Spotify:", err);
   }
 }
 
-// Logout
+// -------------------------------
+// LOGOUT
+// -------------------------------
 function logoutSpotify() {
   localStorage.removeItem("spotify_token");
   localStorage.removeItem("spotify_refresh_token");
   window.location.reload();
 }
 
-// Inicialização
+// -------------------------------
+// INICIALIZAÇÃO GERAL
+// -------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("spotify-login-btn");
   if (loginBtn) loginBtn.addEventListener("click", loginSpotify);
   checkSpotifyAuth();
-});
-
-// Controle das playlists
-document.addEventListener("DOMContentLoaded", () => {
-  const playlistButtons = document.querySelectorAll(".playlist-btn");
-
-  playlistButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const { uri } = btn.dataset;
-      const token = localStorage.getItem("spotify_token");
-
-      if (!token) {
-        alert("Conecte-se ao Spotify primeiro.");
-        return;
-      }
-
-      try {
-        const res = await fetch("https://api.spotify.com/v1/me/player/play", {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ context_uri: uri }),
-        });
-
-        if (!res.ok) throw new Error(`Erro ao reproduzir playlist: ${res.status}`);
-        console.log(`Reproduzindo playlist: ${uri}`);
-      } catch (err) {
-        console.error("Falha ao iniciar playlist:", err);
-      }
-    });
-  });
 });

@@ -1,4 +1,6 @@
-// Controle global do Spotify Player
+// ===============================
+// CONTROLE GLOBAL DO SPOTIFY PLAYER
+// ===============================
 
 let spotifyPlayer = null;
 let currentTrack = null;
@@ -7,10 +9,10 @@ let accessToken = localStorage.getItem("spotify_token");
 const trackListeners = new Set();
 const stateListeners = new Set();
 
-// Inicializa o player principal
 export function initSpotifyPlayer() {
+  accessToken = localStorage.getItem("spotify_token");
   if (!accessToken) {
-    console.warn("Token Spotify ausente.");
+    console.warn("Spotify offline: nenhum token encontrado.");
     return;
   }
 
@@ -26,8 +28,9 @@ export function initSpotifyPlayer() {
   }
 }
 
-// Configuração do player e eventos
 function setupPlayer() {
+  if (!accessToken) return;
+
   spotifyPlayer = new Spotify.Player({
     name: "Pomodoro Focus Player",
     getOAuthToken: cb => cb(accessToken),
@@ -35,19 +38,22 @@ function setupPlayer() {
   });
 
   spotifyPlayer.addListener("ready", ({ device_id }) => {
-    console.log("Spotify Player ativo:", device_id);
+    console.log("🎵 Spotify Player pronto:", device_id);
   });
 
   spotifyPlayer.addListener("player_state_changed", (state) => {
     if (!state || !state.track_window?.current_track) return;
 
-    const { name, artists } = state.track_window.current_track;
+    const { name, artists, album } = state.track_window.current_track;
+
     currentTrack = {
       name,
       artist: artists.map(a => a.name).join(", "),
+      albumImage: album?.images?.[0]?.url || "img/default-avatar.svg",
       isPlaying: !state.paused,
     };
 
+    // Notifica todos os ouvintes (páginas que estão escutando)
     trackListeners.forEach(cb => cb(currentTrack));
     stateListeners.forEach(cb => cb(state));
   });
@@ -55,7 +61,7 @@ function setupPlayer() {
   spotifyPlayer.connect();
 }
 
-// Eventos públicos
+// Listeners
 export function onTrackChange(callback) {
   trackListeners.add(callback);
   if (currentTrack) callback(currentTrack);
@@ -67,15 +73,13 @@ export function onPlayerStateChange(callback) {
   return () => stateListeners.delete(callback);
 }
 
-// Controles de reprodução
+// Controles
 export function playPause() {
   spotifyPlayer?.togglePlay();
 }
-
 export function nextTrack() {
   spotifyPlayer?.nextTrack();
 }
-
 export function previousTrack() {
   spotifyPlayer?.previousTrack();
 }
