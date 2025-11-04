@@ -1,15 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/token.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "**",
-      "use": "@vercel/static"
+  "functions": {
+    "api/token.js": {
+      "runtime": "nodejs22.x"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
