@@ -9,6 +9,7 @@ const redirectUri = isLocal
   ? "http://127.0.0.1:5500/musica.html"
   : "https://pomodoro-focus-bt.vercel.app/musica.html";
 
+// Escopos de permissão
 const scopes = [
   "user-read-private",
   "user-read-email",
@@ -19,15 +20,16 @@ const scopes = [
   "playlist-read-collaborative",
 ];
 
-const AUTH_PROXY = isLocal
-  ? "http://127.0.0.1:5500/api/token.js"
-  : "https://pomodoro-focus-bt.vercel.app/api/token";
+// Proxy no deploy (Vercel)
+const AUTH_PROXY = "https://pomodoro-focus-bt.vercel.app/api/token";
 
 // Login
 function loginSpotify() {
-  const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}&scope=${encodeURIComponent(scopes.join(" "))}`;
+  const authUrl =
+    `https://accounts.spotify.com/authorize?client_id=${clientId}` +
+    `&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&scope=${encodeURIComponent(scopes.join(" "))}` +
+    `&show_dialog=true`;
   window.location.href = authUrl;
 }
 
@@ -35,7 +37,16 @@ function loginSpotify() {
 async function exchangeCodeForToken(code) {
   try {
     const res = await fetch(`${AUTH_PROXY}?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`);
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Resposta inválida do servidor:", text);
+      alert("Erro na comunicação com o Spotify.");
+      return;
+    }
 
     if (!data.access_token) {
       console.error("Erro ao trocar código:", data);
@@ -44,27 +55,64 @@ async function exchangeCodeForToken(code) {
     }
 
     localStorage.setItem("spotify_token", data.access_token);
-    localStorage.setItem("spotify_refresh_token", data.refresh_token);
+    if (data.refresh_token) localStorage.setItem("spotify_refresh_token", data.refresh_token);
 
     renderSpotifyConnected(data.access_token);
     initSpotifyPlayer();
   } catch (err) {
     console.error("Erro ao obter token:", err);
+    alert("Erro ao conectar ao Spotify.");
   }
 }
 
+// Atualiza token expirado
+async function refreshSpotifyToken() {
+  const refresh = localStorage.getItem("spotify_refresh_token");
+  if (!refresh) return;
+
+  try {
+    const res = await fetch(`${AUTH_PROXY}?refresh_token=${refresh}&redirect_uri=${encodeURIComponent(redirectUri)}`);
+    const data = await res.json();
+
+    if (data.access_token) {
+      localStorage.setItem("spotify_token", data.access_token);
+      return data.access_token;
+    }
+  } catch (err) {
+    console.warn("Erro ao atualizar token:", err);
+  }
+  logoutSpotify();
+}
+
 // Verifica autenticação
-function checkSpotifyAuth() {
+async function checkSpotifyAuth() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
-  const token = localStorage.getItem("spotify_token");
+  let token = localStorage.getItem("spotify_token");
 
   if (code) {
     exchangeCodeForToken(code);
     window.history.replaceState({}, document.title, window.location.pathname);
   } else if (token) {
-    renderSpotifyConnected(token);
-    initSpotifyPlayer();
+    const valid = await validateSpotifyToken(token);
+    if (!valid) token = await refreshSpotifyToken();
+
+    if (token) {
+      renderSpotifyConnected(token);
+      initSpotifyPlayer();
+    }
+  }
+}
+
+// Valida token
+async function validateSpotifyToken(token) {
+  try {
+    const res = await fetch("https://api.spotify.com/v1/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 
@@ -77,6 +125,13 @@ async function renderSpotifyConnected(token) {
     const res = await fetch("https://api.spotify.com/v1/me", {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    if (!res.ok) {
+      console.warn("Token expirado, limpando sessão.");
+      logoutSpotify();
+      return;
+    }
+
     const data = await res.json();
 
     section.innerHTML = `
