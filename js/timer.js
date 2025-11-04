@@ -29,6 +29,33 @@ function updateDisplay() {
 }
 
 // ------------------------------
+// salva estatísticas locais após cada sessão de trabalho concluída
+// ------------------------------
+function updateStats(minutes) {
+  try {
+    const stats = JSON.parse(localStorage.getItem("pomodoro_stats")) || {
+      totalFocus: 0,
+      pomodoros: 0,
+      lastSession: null,
+      history: []
+    };
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("pt-BR");
+
+    stats.totalFocus = (stats.totalFocus || 0) + minutes;
+    stats.pomodoros = (stats.pomodoros || 0) + 1;
+    stats.lastSession = dateStr;
+    stats.history = stats.history || [];
+    stats.history.push({ date: dateStr, minutes });
+
+    localStorage.setItem("pomodoro_stats", JSON.stringify(stats));
+  } catch (err) {
+    console.error("Erro ao atualizar estatísticas:", err);
+  }
+}
+
+// ------------------------------
 //  Inicia ou retoma o timer
 // ------------------------------
 function startTimer() {
@@ -41,7 +68,7 @@ function startTimer() {
   pauseBtn.style.display = "inline-flex";
 
   // Inicia o giro do tomate 🍅
-  tomato.style.animationPlayState = "running";
+  if (tomato) tomato.style.animationPlayState = "running";
 
   timerInterval = setInterval(() => {
     if (timeLeft > 0) {
@@ -50,12 +77,17 @@ function startTimer() {
     } else {
       clearInterval(timerInterval);
       isRunning = false;
-      tomato.style.animationPlayState = "paused";
+      if (tomato) tomato.style.animationPlayState = "paused";
 
       // Alterna entre trabalho e descanso
       if (isWorkSession) {
         completedSessions++;
         sessionsDone.textContent = completedSessions;
+
+        // Atualiza estatísticas com os minutos configurados de trabalho
+        const minutesWorked = parseInt(workInput.value) || 0;
+        updateStats(minutesWorked);
+
         isWorkSession = false;
         timeLeft = parseInt(breakInput.value) * 60;
         sessionLabel.innerHTML =
@@ -67,7 +99,9 @@ function startTimer() {
           '<i class="ph ph-timer"></i> Sessão de Trabalho';
       }
 
-      startTimer();
+      // reinicia automaticamente o próximo período
+      // pequena quebra para evitar reentrada instantânea
+      setTimeout(startTimer, 500);
     }
   }, 1000);
 }
@@ -82,7 +116,7 @@ function pauseTimer() {
   isPaused = true;
 
   // Pausa o tomate 🍅
-  tomato.style.animationPlayState = "paused";
+  if (tomato) tomato.style.animationPlayState = "paused";
 
   // Alterna visibilidade dos botões
   startBtn.innerHTML = '<i class="ph ph-play"></i> Retomar';
@@ -102,12 +136,15 @@ function resetTimer() {
   updateDisplay();
   sessionLabel.innerHTML = '<i class="ph ph-timer"></i> Sessão de Trabalho';
 
-  // Reinicia a rotação do tomate da forma correta
-  tomato.style.animation = "none";
-  tomato.offsetHeight;
-  tomato.style.animation = "rotateTomato 60s linear infinite";
-  tomato.style.animationPlayState = "paused";
-  tomato.style.transform = "rotate(0deg)";
+  // Reinicia a rotação do tomate de forma suave
+  if (tomato) {
+    tomato.style.animation = "none";
+    // força repaint
+    void tomato.offsetWidth;
+    tomato.style.animation = "rotateTomato 60s linear infinite";
+    tomato.style.animationPlayState = "paused";
+    tomato.style.transform = "rotate(0deg)";
+  }
 
   // Volta os botões ao estado inicial
   startBtn.innerHTML = '<i class="ph ph-play"></i> Iniciar';
@@ -115,34 +152,27 @@ function resetTimer() {
   pauseBtn.style.display = "none";
 }
 
-// Pausa o tomate e volta ele pra posição original
-tomato.style.animationPlayState = "paused";
-tomato.style.transform = "rotate(0deg)";
-
-// Volta os botões ao estado inicial
-startBtn.innerHTML = '<i class="ph ph-play"></i> Iniciar';
-startBtn.style.display = "inline-flex";
-pauseBtn.style.display = "none";
+// Inicial setup seguro (verifica existência dos elementos)
+if (tomato) tomato.style.animationPlayState = "paused";
+if (startBtn) startBtn.innerHTML = '<i class="ph ph-play"></i> Iniciar';
+if (startBtn) startBtn.style.display = "inline-flex";
+if (pauseBtn) pauseBtn.style.display = "none";
+updateDisplay();
 
 // ------------------------------
 // Atualiza o tempo se o usuário mudar o valor
 // ------------------------------
-workInput.addEventListener("change", () => {
-  if (!isRunning && !isPaused) {
-    timeLeft = parseInt(workInput.value) * 60;
-    updateDisplay();
-  }
-});
+if (workInput) {
+  workInput.addEventListener("change", () => {
+    if (!isRunning && !isPaused) {
+      timeLeft = parseInt(workInput.value) * 60;
+      updateDisplay();
+    }
+  });
+}
 
 // ------------------------------
-// Eventos dos botões
-// ------------------------------
-startBtn.addEventListener("click", startTimer);
-pauseBtn.addEventListener("click", pauseTimer);
-resetBtn.addEventListener("click", resetTimer);
-
-// ------------------------------
-// Inicialização
-// ------------------------------
-updateDisplay();
-pauseBtn.style.display = "none"; // esconde o botão de pausa ao carregar
+// Eventos dos botões (verifica existência)
+if (startBtn) startBtn.addEventListener("click", startTimer);
+if (pauseBtn) pauseBtn.addEventListener("click", pauseTimer);
+if (resetBtn) resetBtn.addEventListener("click", resetTimer);

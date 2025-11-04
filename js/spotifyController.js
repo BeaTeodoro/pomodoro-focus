@@ -1,85 +1,52 @@
-// ===============================
-// CONTROLE GLOBAL DO SPOTIFY PLAYER
-// ===============================
+let accessToken = null;
+let playerInstance = null;
+let trackChangeListeners = [];
 
-let spotifyPlayer = null;
-let currentTrack = null;
-let accessToken = localStorage.getItem("spotify_token");
-
-const trackListeners = new Set();
-const stateListeners = new Set();
-
-export function initSpotifyPlayer() {
-  accessToken = localStorage.getItem("spotify_token");
-  if (!accessToken) {
-    console.warn("Spotify offline: nenhum token encontrado.");
-    return;
-  }
-
-  if (spotifyPlayer) return;
-
-  if (!window.Spotify) {
-    const script = document.createElement("script");
-    script.src = "https://sdk.scdn.co/spotify-player.js";
-    script.onload = setupPlayer;
-    document.body.appendChild(script);
-  } else {
-    setupPlayer();
-  }
+// Define token e player
+export function setAccessToken(token, player) {
+  accessToken = token;
+  playerInstance = player;
+  observePlayerState();
 }
 
-function setupPlayer() {
-  if (!accessToken) return;
-
-  spotifyPlayer = new Spotify.Player({
-    name: "Pomodoro Focus Player",
-    getOAuthToken: cb => cb(accessToken),
-    volume: 0.5,
-  });
-
-  spotifyPlayer.addListener("ready", ({ device_id }) => {
-    console.log("🎵 Spotify Player pronto:", device_id);
-  });
-
-  spotifyPlayer.addListener("player_state_changed", (state) => {
-    if (!state || !state.track_window?.current_track) return;
-
-    const { name, artists, album } = state.track_window.current_track;
-
-    currentTrack = {
-      name,
-      artist: artists.map(a => a.name).join(", "),
-      albumImage: album?.images?.[0]?.url || "img/default-avatar.svg",
+// Observa alterações no player
+function observePlayerState() {
+  if (!playerInstance) return;
+  playerInstance.addListener("player_state_changed", state => {
+    if (!state || !state.track_window) return;
+    const current = state.track_window.current_track;
+    const track = {
+      name: current.name,
+      artist: current.artists.map(a => a.name).join(", "),
+      albumImage: current.album.images[0]?.url || null,
       isPlaying: !state.paused,
     };
-
-    // Notifica todos os ouvintes (páginas que estão escutando)
-    trackListeners.forEach(cb => cb(currentTrack));
-    stateListeners.forEach(cb => cb(state));
+    trackChangeListeners.forEach(cb => cb(track));
   });
-
-  spotifyPlayer.connect();
 }
 
-// Listeners
+// Controle
+export async function play() {
+  if (!playerInstance) return;
+  await playerInstance.resume();
+}
+
+export async function pause() {
+  if (!playerInstance) return;
+  await playerInstance.pause();
+}
+
+export async function next() {
+  if (!playerInstance) return;
+  await playerInstance.nextTrack();
+}
+
+export async function previous() {
+  if (!playerInstance) return;
+  await playerInstance.previousTrack();
+}
+
+// Listener de faixas
 export function onTrackChange(callback) {
-  trackListeners.add(callback);
-  if (currentTrack) callback(currentTrack);
-  return () => trackListeners.delete(callback);
-}
-
-export function onPlayerStateChange(callback) {
-  stateListeners.add(callback);
-  return () => stateListeners.delete(callback);
-}
-
-// Controles
-export function playPause() {
-  spotifyPlayer?.togglePlay();
-}
-export function nextTrack() {
-  spotifyPlayer?.nextTrack();
-}
-export function previousTrack() {
-  spotifyPlayer?.previousTrack();
+  trackChangeListeners.push(callback);
 }

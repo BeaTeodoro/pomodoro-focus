@@ -3,8 +3,6 @@
 
 <head>
   <meta charset="UTF-8" />
-
-  <!-- Tema inicial -->
   <script>
     (() => {
       try {
@@ -201,12 +199,10 @@
         </div>
       </div>
 
-      <!-- Texto central -->
       <p class="footer-center">
         © 2025 <strong>Pomodoro Focus</strong> — Desenvolvido por <strong>Beatriz Teodoro</strong> 🍅
       </p>
 
-      <!-- Redes -->
       <div class="social-links">
         <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn">
           <i class="ph ph-linkedin-logo"></i>
@@ -223,6 +219,21 @@
   <script src="js/header.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
+
+  <!-- Sessão ativa → botão perfil -->
+  <script type="module">
+    import { getSession } from "./js/auth.js";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const session = await getSession();
+      const loginButton = document.querySelector(".btn-login");
+
+      if (session && loginButton) {
+        loginButton.innerHTML = `<i class="ph ph-user"></i> Perfil`;
+        loginButton.href = "cadastro.html";
+      }
+    });
+  </script>
 </body>
 
 </html>

@@ -1,9 +1,9 @@
-// Estatísticas dinâmicas com Chart.js
+// Elementos
 const totalFocusEl = document.getElementById("total-focus");
 const pomodorosDoneEl = document.getElementById("pomodoros-done");
 const lastSessionEl = document.getElementById("last-session");
 
-// Dados do localStorage
+// Dados locais
 let stats = JSON.parse(localStorage.getItem("pomodoro_stats")) || {
   totalFocus: 0,
   pomodoros: 0,
@@ -11,14 +11,15 @@ let stats = JSON.parse(localStorage.getItem("pomodoro_stats")) || {
   history: []
 };
 
-// Atualiza interface
+// Atualiza valores na tela
 function updateStatsUI() {
+  if (!totalFocusEl || !pomodorosDoneEl || !lastSessionEl) return;
   totalFocusEl.textContent = `${stats.totalFocus} min`;
   pomodorosDoneEl.textContent = stats.pomodoros;
   lastSessionEl.textContent = stats.lastSession || "—";
 }
 
-// Gráfico
+// Renderiza gráfico
 function renderChart() {
   const ctx = document.getElementById("focusChart");
   if (!ctx) return;
@@ -37,7 +38,7 @@ function renderChart() {
         label: "Minutos de foco por dia",
         data: values,
         backgroundColor: "var(--primary)",
-        borderRadius: 6,
+        borderRadius: 6
       }]
     },
     options: {
@@ -58,12 +59,12 @@ function renderChart() {
   });
 }
 
-// Scroll lateral suave (mobile)
+// Scroll lateral no mobile
 function enableSmoothScroll() {
   const statsContainer = document.querySelector(".stats-cards");
   if (!statsContainer) return;
 
-  statsContainer.addEventListener("wheel", (e) => {
+  statsContainer.addEventListener("wheel", e => {
     if (window.innerWidth < 768) {
       e.preventDefault();
       statsContainer.scrollLeft += e.deltaY * 0.8;

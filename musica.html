@@ -3,7 +3,6 @@
 
 <head>
   <meta charset="UTF-8" />
-
   <!-- Tema inicial -->
   <script>
     (() => {
@@ -113,7 +112,6 @@
         </div>
       </section>
 
-
       <!-- Player principal -->
       <div class="player-container">
         <img id="track-image" src="img/default-avatar.svg" alt="Capa da música" class="track-cover" />
@@ -132,8 +130,6 @@
         <button id="play-pause-btn" class="btn primary"><i class="ph ph-play"></i></button>
         <button id="next-btn" class="btn outline"><i class="ph ph-skip-forward"></i></button>
       </div>
-      </div>
-      </div>
     </section>
   </main>
 
@@ -141,23 +137,19 @@
   <footer class="footer">
     <div class="footer-content container">
       <div class="mini-player-footer">
-        <!-- Ícone -->
         <i class="ph ph-spotify-logo spotify-icon"></i>
 
-        <!-- Controles -->
         <div class="player-buttons">
           <button id="mini-prev"><i class="ph ph-skip-back"></i></button>
           <button id="mini-play" class="play-btn"><i class="ph ph-play"></i></button>
           <button id="mini-next"><i class="ph ph-skip-forward"></i></button>
         </div>
 
-        <!-- Faixa atual -->
         <div class="mini-track-info">
-          <p class="track-title">—</p>
-          <span class="track-artist">—</span>
+          <p class="track-title">Título da música</p>
+          <span class="track-artist">Artista</span>
         </div>
 
-        <!-- Progresso -->
         <div class="mini-progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -184,6 +176,7 @@
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
 
+  <!-- Atualiza capa e texto do player -->
   <script type="module">
     import { onTrackChange } from "./js/spotifyController.js";
 
@@ -193,8 +186,6 @@
 
     onTrackChange((track) => {
       if (!track) return;
-
-      // Efeito suave na troca de capa
       trackImage.classList.add("updating");
       trackImage.src = track.albumImage || "img/default-avatar.svg";
 
@@ -202,13 +193,10 @@
         trackImage.classList.remove("updating");
       };
 
-      // Atualiza texto
       trackTitle.textContent = track.name || "—";
       trackArtist.textContent = track.artist || "—";
     });
   </script>
-
-
 </body>
 
 </html>

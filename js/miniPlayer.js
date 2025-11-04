@@ -1,66 +1,43 @@
-// ===============================
-// MINI PLAYER — SINCRONIZADO COM SPOTIFY
-// ===============================
+import { next, onTrackChange, pause, play, previous } from "./spotifyController.js";
 
-import {
-  initSpotifyPlayer,
-  nextTrack,
-  onPlayerStateChange,
-  onTrackChange,
-  playPause,
-  previousTrack,
-} from "./spotifyController.js";
+const miniPrev = document.getElementById("mini-prev");
+const miniPlay = document.getElementById("mini-play");
+const miniNext = document.getElementById("mini-next");
+const trackTitle = document.querySelector(".mini-track-info .track-title");
+const trackArtist = document.querySelector(".mini-track-info .track-artist");
+const progressBar = document.querySelector(".mini-progress-bar .progress-fill");
 
-document.addEventListener("DOMContentLoaded", () => {
-  const titleEl = document.querySelector(".track-title");
-  const artistEl = document.querySelector(".track-artist");
-  const playBtn = document.querySelector(".play-btn i");
-  const prevBtn = document.querySelector(".ph-skip-back")?.parentElement;
-  const nextBtn = document.querySelector(".ph-skip-forward")?.parentElement;
-  const progressFill = document.querySelector(".mini-progress-bar .progress-fill");
+let isPlaying = false;
 
-  // Se o player global não estiver ativo, não dá erro
-  if (!titleEl || !artistEl || !playBtn) return;
-
-  initSpotifyPlayer();
-
-  // Atualiza informações da faixa
-  onTrackChange((track) => {
-    if (!track) return;
-    titleEl.textContent = track.name || "—";
-    artistEl.textContent = track.artist || "—";
-    playBtn.className = track.isPlaying ? "ph ph-pause" : "ph ph-play";
-  });
-
-  // Controles
-  prevBtn?.addEventListener("click", previousTrack);
-  nextBtn?.addEventListener("click", nextTrack);
-  playBtn?.parentElement?.addEventListener("click", playPause);
-
-  // Barra de progresso
-  let progressInterval;
-
-  onPlayerStateChange((state) => {
-    if (!state) return;
-    const { position, duration, paused } = state;
-    updateProgress(position, duration);
-
-    progressFill?.classList.toggle("playing", !paused);
-    clearInterval(progressInterval);
-
-    if (!paused && duration) {
-      progressInterval = setInterval(() => {
-        const currentWidth = parseFloat(progressFill.style.width) || 0;
-        const nextWidth = currentWidth + (100 / (duration / 1000)) * 0.5;
-        progressFill.style.width = `${Math.min(nextWidth, 100)}%`;
-      }, 500);
-    }
-  });
+// Atualiza faixa
+onTrackChange(track => {
+  if (!track) return;
+  trackTitle.textContent = track.name || "—";
+  trackArtist.textContent = track.artist || "—";
+  isPlaying = track.isPlaying;
+  updatePlayIcon();
 });
 
-function updateProgress(position, duration) {
-  const fill = document.querySelector(".mini-progress-bar .progress-fill");
-  if (!fill || !duration) return;
-  const percent = (position / duration) * 100;
-  fill.style.width = `${percent}%`;
+// Botões
+if (miniPrev) miniPrev.addEventListener("click", previous);
+if (miniNext) miniNext.addEventListener("click", next);
+if (miniPlay) miniPlay.addEventListener("click", () => {
+  if (isPlaying) pause();
+  else play();
+  isPlaying = !isPlaying;
+  updatePlayIcon();
+});
+
+// Ícone
+function updatePlayIcon() {
+  miniPlay.innerHTML = isPlaying
+    ? '<i class="ph ph-pause"></i>'
+    : '<i class="ph ph-play"></i>';
 }
+
+// Simulação de progresso
+setInterval(() => {
+  const width = parseFloat(progressBar.style.width) || 0;
+  const newWidth = width >= 100 ? 0 : width + 0.5;
+  progressBar.style.width = newWidth + "%";
+}, 500);
