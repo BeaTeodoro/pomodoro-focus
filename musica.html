@@ -3,7 +3,6 @@
 
 <head>
   <meta charset="UTF-8" />
-  <!-- Tema inicial -->
   <script>
     (() => {
       try {
@@ -76,43 +75,11 @@
       <p class="info-text">Você será redirecionado para o Spotify para autorizar o acesso.</p>
     </section>
 
-    <!-- Player completo -->
+    <!-- Player Spotify -->
     <section class="section-card spotify-player" id="player-section" style="display: none;">
       <h3><i class="ph ph-speaker-high"></i> Reprodutor Spotify</h3>
       <p id="player-status">Conectando ao Spotify...</p>
 
-      <!-- Busca -->
-      <div class="spotify-search">
-        <label for="search-track"><i class="ph ph-magnifying-glass"></i> Buscar músicas ou artistas</label>
-        <div class="search-box">
-          <input type="text" id="search-track" placeholder="Digite o nome da música ou artista..." />
-          <button id="search-btn" class="btn outline"><i class="ph ph-magnifying-glass"></i></button>
-        </div>
-        <ul id="search-results" class="search-results"></ul>
-      </div>
-
-      <!-- Playlists recomendadas -->
-      <section class="playlist-section">
-        <h3><i class="ph ph-list-music"></i> Playlists Recomendadas</h3>
-        <p>Escolha uma playlist para reproduzir durante seu foco.</p>
-
-        <div class="playlist-list">
-          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DX4sWSpwq3LiO">
-            <i class="ph ph-brain"></i> Deep Focus
-          </button>
-          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DWZZbwlv3Vmtr">
-            <i class="ph ph-piano-keys"></i> Peaceful Piano
-          </button>
-          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DWT4wKkPLIYjv">
-            <i class="ph ph-waveform"></i> Lo-Fi Beats
-          </button>
-          <button class="playlist-btn" data-uri="spotify:playlist:37i9dQZF1DX4E3UdUs7fUx">
-            <i class="ph ph-leaf"></i> Ambient Chill
-          </button>
-        </div>
-      </section>
-
-      <!-- Player principal -->
       <div class="player-container">
         <img id="track-image" src="img/default-avatar.svg" alt="Capa da música" class="track-cover" />
         <div class="track-details">
@@ -150,7 +117,7 @@
           <span class="track-artist">Artista</span>
         </div>
 
-        <!-- Mantém apenas barra de progresso, sem capa -->
+        <!-- Barra de progresso -->
         <div class="mini-progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -171,33 +138,20 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- SDK oficial Spotify -->
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script>
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      console.log("🎧 Spotify SDK carregado com sucesso");
+      if (window.initSpotifyPlayer) window.initSpotifyPlayer();
+    };
+  </script>
+
+  <!-- Scripts locais -->
   <script src="js/theme.js"></script>
   <script src="js/header.js"></script>
-  <script type="module" src="js/spotify.js"></script>
-  <script type="module" src="js/miniPlayer.js"></script>
-
-  <!-- Atualiza capa e texto do player principal -->
-  <script type="module">
-    import { onTrackChange } from "./js/spotifyController.js";
-
-    const trackImage = document.getElementById("track-image");
-    const trackTitle = document.getElementById("track-title");
-    const trackArtist = document.getElementById("track-artist");
-
-    onTrackChange((track) => {
-      if (!track) return;
-      trackImage.classList.add("updating");
-      trackImage.src = track.albumImage || "img/default-avatar.svg";
-
-      trackImage.onload = () => {
-        trackImage.classList.remove("updating");
-      };
-
-      trackTitle.textContent = track.name || "—";
-      trackArtist.textContent = track.artist || "—";
-    });
-  </script>
+  <script src="js/spotify.js"></script>
+  <script src="js/miniPlayer.js"></script>
 </body>
 
 </html>
