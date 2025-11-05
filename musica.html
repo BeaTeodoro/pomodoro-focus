@@ -138,20 +138,15 @@
     </div>
   </footer>
 
-  <!-- SDK oficial Spotify -->
+  <!-- SDK Spotify -->
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
-  <script>
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      console.log("🎧 Spotify SDK carregado com sucesso");
-      if (window.initSpotifyPlayer) window.initSpotifyPlayer();
-    };
-  </script>
 
-  <!-- Scripts locais -->
+  <!-- Scripts -->
   <script src="js/theme.js"></script>
   <script src="js/header.js"></script>
-  <script src="js/spotify.js"></script>
-  <script src="js/miniPlayer.js"></script>
+  <script type="module" src="js/spotify.js"></script>
+  <script type="module" src="js/miniPlayer.js"></script>
+
 </body>
 
 </html>

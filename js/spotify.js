@@ -23,7 +23,7 @@ const scopes = [
 // Proxy no deploy (Vercel)
 const AUTH_PROXY = "https://pomodoro-focus-bt.vercel.app/api/token";
 
-// Login
+// Login Spotify
 function loginSpotify() {
   const authUrl =
     `https://accounts.spotify.com/authorize?client_id=${clientId}` +
@@ -59,6 +59,13 @@ async function exchangeCodeForToken(code) {
 
     renderSpotifyConnected(data.access_token);
     initSpotifyPlayer();
+
+    // Exibe o player após autenticação
+    const playerSection = document.getElementById("player-section");
+    if (playerSection) {
+      playerSection.style.display = "block";
+      console.log("🎵 Player exibido após login");
+    }
   } catch (err) {
     console.error("Erro ao obter token:", err);
     alert("Erro ao conectar ao Spotify.");
@@ -100,6 +107,13 @@ async function checkSpotifyAuth() {
     if (token) {
       renderSpotifyConnected(token);
       initSpotifyPlayer();
+
+      // Garante que o player fique visível após reload
+      const playerSection = document.getElementById("player-section");
+      if (playerSection) {
+        playerSection.style.display = "block";
+        console.log("🎵 Player exibido (usuário já autenticado)");
+      }
     }
   }
 }
@@ -150,6 +164,14 @@ async function renderSpotifyConnected(token) {
     `;
 
     document.getElementById("spotify-logout-btn").addEventListener("click", logoutSpotify);
+
+    // Exibe o player assim que o usuário estiver conectado
+    const playerSection = document.getElementById("player-section");
+    if (playerSection) {
+      playerSection.style.display = "block";
+      console.log("🎵 Player exibido (usuário conectado)");
+    }
+
   } catch (err) {
     console.error("Erro ao conectar ao Spotify:", err);
   }
@@ -165,6 +187,20 @@ function logoutSpotify() {
 // Inicialização
 document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("spotify-login-btn");
-  if (loginBtn) loginBtn.addEventListener("click", loginSpotify);
+
+  // Garante que o botão funcione
+  if (loginBtn) {
+    loginBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("🎧 Iniciando login com Spotify...");
+      loginSpotify();
+    });
+  }
+
+  // Verifica se o usuário já está autenticado
   checkSpotifyAuth();
 });
+
+// Expõe funções globalmente (para debug e redirect)
+window.loginSpotify = loginSpotify;
+window.checkSpotifyAuth = checkSpotifyAuth;
