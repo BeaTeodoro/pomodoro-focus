@@ -6,7 +6,9 @@ import {
   onTrackChange,
   playContextOrUris,
   playPause,
-  previousTrack, seek, setVolume,
+  previousTrack,
+  seek,
+  setVolume,
   toggleLike, toggleRepeat, toggleShuffle
 } from './spotifyController.js';
 
@@ -23,9 +25,7 @@ const scopes = [
   'user-library-read', 'user-library-modify'
 ];
 
-// ======================
-// LOGIN + TOKEN
-// ======================
+// LOGIN / TOKEN
 function loginSpotify() {
   const url = `https://accounts.spotify.com/authorize?client_id=${clientId}`
     + `&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}`
@@ -36,7 +36,7 @@ function loginSpotify() {
 async function exchangeCodeForToken(code) {
   const r = await fetch(`${AUTH_PROXY}?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`);
   const data = await r.json();
-  if (!data.access_token) { alert('Erro ao autenticar Spotify.'); return; }
+  if (!data.access_token) return alert('Erro ao autenticar Spotify.');
 
   localStorage.setItem('spotify_token', data.access_token);
   if (data.refresh_token) localStorage.setItem('spotify_refresh_token', data.refresh_token);
@@ -45,7 +45,7 @@ async function exchangeCodeForToken(code) {
   showPlayer();
   initSpotifyPlayer();
   loadRecommended();
-  wireSearch(); // garante busca habilitada
+  wireSearch();
 }
 
 async function refreshSpotifyToken() {
@@ -73,9 +73,8 @@ async function checkAuth() {
   }
 
   if (token) {
-    try {
-      await renderConnected(token);
-    } catch {
+    try { await renderConnected(token); }
+    catch {
       token = await refreshSpotifyToken();
       if (token) await renderConnected(token);
     }
@@ -83,10 +82,10 @@ async function checkAuth() {
     initSpotifyPlayer();
     loadRecommended();
     wireSearch();
-  } else {
-    // Sem login: ainda mostramos recomendações clicáveis que pedem login
-    loadRecommended(true);
+    return;
   }
+
+  loadRecommended(true);
 }
 
 function logoutSpotify() {
@@ -95,9 +94,7 @@ function logoutSpotify() {
   location.reload();
 }
 
-// ======================
-// UI: Conectado + Player
-// ======================
+// UI
 async function renderConnected(token) {
   const r = await fetch('https://api.spotify.com/v1/me', { headers: { Authorization: `Bearer ${token}` } });
   if (!r.ok) throw new Error('token inválido');
@@ -108,10 +105,10 @@ async function renderConnected(token) {
 
   el.innerHTML = `
     <div class="connected">
-      <i class="ph ph-spotify-logo big-ok" aria-hidden="true"></i>
+      <i class="ph ph-spotify-logo big-ok"></i>
       <h2>Conectado ao Spotify</h2>
       <p>Bem-vindo(a), <strong>${data.display_name || 'usuário'}</strong></p>
-      <img src="${data.images?.[0]?.url || 'img/default-avatar.svg'}" alt="Perfil" class="profile-pic">
+      <img src="${data.images?.[0]?.url || 'img/default-avatar.svg'}" class="profile-pic">
       <button id="spotify-logout-btn" class="btn outline strong">
         <i class="ph ph-sign-out"></i> <strong>Desconectar</strong>
       </button>
@@ -120,11 +117,6 @@ async function renderConnected(token) {
   document.getElementById('spotify-logout-btn')?.addEventListener('click', logoutSpotify);
 
   wireMainControls();
-  const elapsed = document.getElementById('elapsed');
-  const total = document.getElementById('duration');
-  const playerStatus = document.getElementById('player-status');
-
-  // liga botões do player principal
 }
 
 function showPlayer() {
@@ -132,57 +124,41 @@ function showPlayer() {
   if (s) s.style.display = 'block';
 }
 
-// ======================
-// PLAYER: Controles e estado
-// ======================
+// CONTROLES PRINCIPAIS
 function wireMainControls() {
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
   const playBtn = document.getElementById('play-pause-btn');
-
   const likeBtn = document.getElementById('like-btn');
   const repBtn = document.getElementById('repeat-btn');
   const shfBtn = document.getElementById('shuffle-btn');
-
-  const volBtn = document.getElementById('vol-btn'); // se existir no HTML
+  const volBtn = document.getElementById('vol-btn');
   const volSlider = document.getElementById('volume-slider');
-  // === RESTAURAR VOLUME SALVO ===
-  const savedVol = localStorage.getItem("pf_volume");
-  if (savedVol !== null && volSlider) {
-    volSlider.value = savedVol;
-    setVolume(savedVol);
-  }
+  const volIcon = volBtn.querySelector('i');
 
   const img = document.getElementById('track-image');
   const tt = document.getElementById('track-title');
   const ta = document.getElementById('track-artist');
-
-  const bar = document.getElementById('progress-bar');
   const fill = document.getElementById('progress-fill');
   const elapsed = document.getElementById('elapsed');
   const total = document.getElementById('duration');
+  const playerStatus = document.getElementById('player-status');
+  const bar = document.getElementById('progress-bar');
 
-  prevBtn?.addEventListener('click', previousTrack);
-  nextBtn?.addEventListener('click', nextTrack);
-  playBtn?.addEventListener('click', playPause);
-
-  // like / shuffle / repeat
-  let lastTrackId = null;
-  onTrackChange(t => {
-    lastTrackId = t?.id || null;
+  bar.addEventListener('click', (e) => {
+    const rect = bar.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    seek(pct * 100);
   });
 
-  likeBtn?.addEventListener("click", async () => {
+  let lastTrackId = null;
+  onTrackChange(t => lastTrackId = t?.id || null);
+
+  likeBtn?.addEventListener('click', async () => {
     if (!lastTrackId) return;
-
     const liked = await toggleLike(lastTrackId);
-
-    likeBtn.classList.toggle("active", liked);
-
-    const icon = likeBtn.querySelector("i");
-    if (icon) {
-      icon.className = liked ? "ph ph-heart-fill" : "ph ph-heart";
-    }
+    likeBtn.classList.toggle('active', liked);
+    likeBtn.querySelector('i').className = liked ? 'ph ph-heart-fill' : 'ph ph-heart';
   });
 
   shfBtn?.addEventListener('click', async () => {
@@ -194,220 +170,240 @@ function wireMainControls() {
     const mode = await toggleRepeat();
     repBtn.dataset.mode = mode;
     repBtn.classList.toggle('active', mode !== 'off');
-    // você pode trocar ícone conforme mode (off/context/track) se quiser
   });
 
-  // volume + mute
-  let muted = false;
-  volBtn?.addEventListener('click', () => {
+  prevBtn.addEventListener('click', previousTrack);
+  nextBtn.addEventListener('click', nextTrack);
+  playBtn.addEventListener('click', playPause);
+
+  let muted = (Number(volSlider.value) === 0);
+
+  const updateVolumeIcon = (value) => {
+    const v = Number(value);
+    if (muted || v === 0) volIcon.className = "ph ph-speaker-x";
+    else if (v <= 25) volIcon.className = "ph ph-speaker-none";
+    else if (v <= 60) volIcon.className = "ph ph-speaker-low";
+    else volIcon.className = "ph ph-speaker-high";
+  };
+
+  updateVolumeIcon(volSlider.value);
+
+  volSlider.addEventListener('input', e => {
+    const v = e.target.value;
+    setVolume(v);
+    localStorage.setItem('pf_volume', v);
+    muted = (v == 0);
+    updateVolumeIcon(v);
+  });
+
+  volBtn.addEventListener('dblclick', () => {
     muted = !muted;
     if (muted) {
-      volBtn.classList.add('muted');
-      volBtn.dataset.prev = volSlider?.value || '70';
-      if (volSlider) volSlider.value = '0';
+      volSlider.dataset.prev = volSlider.value;
+      volSlider.value = 0;
       setVolume(0);
     } else {
-      volBtn.classList.remove('muted');
-      const back = volBtn.dataset.prev || '70';
-      if (volSlider) volSlider.value = back;
-      setVolume(back);
+      const b = volSlider.dataset.prev || 60;
+      volSlider.value = b;
+      setVolume(b);
     }
+    updateVolumeIcon(volSlider.value);
   });
-  volSlider?.addEventListener('input', e => setVolume(e.target.value));
 
-  // Atualização de UI por estado
   onTrackChange((t) => {
-    if (img) { img.classList.add('updating'); img.src = t.albumImage || 'img/default-avatar.svg'; img.onload = () => img.classList.remove('updating'); }
-    if (tt) tt.textContent = t.name || '—';
-    if (ta) ta.textContent = t.artist || '—';
-
-    const p = t.duration ? (t.position / t.duration) * 100 : 0;
-    if (fill) fill.style.width = `${p}%`;
-    if (elapsed) elapsed.textContent = fmt(t.position);
-    if (total) total.textContent = fmt(t.duration);
-
-    const icon = playBtn?.querySelector('i');
-    if (icon) icon.className = t.isPlaying ? 'ph ph-pause' : 'ph ph-play';
-
-    if (playerStatus) playerStatus.textContent = "Pronto para tocar";
-    if (playerStatus) playerStatus.textContent = t.isPlaying ? "Tocando agora" : "Pausado";
+    img.src = t.albumImage || 'img/default-avatar.svg';
+    tt.textContent = t.name || '—';
+    ta.textContent = t.artist || '—';
+    playerStatus.textContent = t.isPlaying ? 'Tocando agora' : 'Pausado';
   });
 
   onPlayerStateChange((s) => {
     if (!s?.duration) return;
-    const pct = (s.position / s.duration) * 100;
-    fill.style.width = `${pct}%`;
+    fill.style.width = `${(s.position / s.duration) * 100}%`;
     elapsed.textContent = fmt(s.position);
     total.textContent = fmt(s.duration);
-    const icon = playBtn?.querySelector('i');
-    if (icon) icon.className = s.paused ? 'ph ph-play' : 'ph ph-pause';
-    if (playerStatus) playerStatus.textContent = s.paused ? "Pausado" : "Tocando agora";
+    playerStatus.textContent = s.paused ? 'Pausado' : 'Tocando agora';
   });
-
-
-  // Seek arrastável e clique
-  let dragging = false;
-  const pctFromEvent = (e) => {
-    const rect = bar.getBoundingClientRect();
-    const clientX = (e.touches && e.touches[0]?.clientX) || e.clientX;
-    const x = Math.min(Math.max(0, clientX - rect.left), rect.width);
-    return (x / rect.width) * 100;
-  };
-  bar?.addEventListener('mousedown', (e) => { dragging = true; seek(pctFromEvent(e)); });
-  window.addEventListener('mousemove', (e) => { if (dragging) seek(pctFromEvent(e)); });
-  window.addEventListener('mouseup', () => { dragging = false; });
-  bar?.addEventListener('touchstart', (e) => { dragging = true; seek(pctFromEvent(e)); }, { passive: true });
-  window.addEventListener('touchmove', (e) => { if (dragging) seek(pctFromEvent(e)); }, { passive: true });
-  window.addEventListener('touchend', () => { dragging = false; });
 }
 
 function fmt(ms = 0) {
-  const s = Math.floor(ms / 1000);
+  const s = Math.floor((ms || 0) / 1000);
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${String(r).padStart(2, '0')}`;
 }
 
-// ======================
-// RECOMENDAÇÕES (mantidas)
+// RECOMENDADOS
 const recItems = [
-  { kind: 'playlist', id: '59d0fMsUB0IUcWShIJPblE', name: 'Focus Flow' },
-  { kind: 'album', id: '0Mhs1rtpOqQ5IR2xKOr4W4', name: 'Brain Food' },
-  { kind: 'playlist', id: '5z9CdKSqJjAt30rhTlRDZX', name: 'Deep Work' },
-  { kind: 'album', id: '71HsJBoL9ZaegMEArmYF66', name: 'Lo-Fi Jazz Study' },
+  { kind: 'playlist', id: '59d0fMsUB0IUcWShIJPblE', name: 'Calming Study' },
+  { kind: 'album', id: '0Mhs1rtpOqQ5IR2xKOr4W4', name: 'For Coding' },
+  { kind: 'playlist', id: '5z9CdKSqJjAt30rhTlRDZX', name: 'Concentration & Study' },
+  { kind: 'album', id: '71HsJBoL9ZaegMEArmYF66', name: 'Deep Work' },
 ];
 
-async function loadRecommended(readOnly = false) {
+async function loadRecommended() {
   const ul = document.getElementById('recommended-container');
   if (!ul) return;
 
   const token = localStorage.getItem('spotify_token');
   ul.innerHTML = '';
+
   for (const r of recItems) {
-    const url = r.kind === 'playlist'
+    const endpoint = r.kind === 'playlist'
       ? `https://api.spotify.com/v1/playlists/${r.id}`
       : `https://api.spotify.com/v1/albums/${r.id}`;
-    try {
-      const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      const data = await res.json();
-      const img = data.images?.[0]?.url || data.images?.[1]?.url || data.images?.[2]?.url || 'img/default-avatar.svg';
-      const { uri } = data;
 
-      const li = document.createElement('li');
-      li.className = 'rec-item';
-      li.innerHTML = `
-        <img src="${img}" alt="">
-        <div class="rec-meta">
-          <span class="rec-title">${r.name}</span>
-          <button class="btn outline play-item"><i class="ph ph-play"></i></button>
-        </div>
-      `;
-      li.querySelector('.play-item')?.addEventListener('click', async () => {
-        if (!token) { loginSpotify(); return; }
-        playContextOrUris({ context_uri: uri });
-      });
-      ul.appendChild(li);
-    } catch { }
+    const res = await fetch(endpoint, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const data = await res.json();
+
+    const img = data.images?.[0]?.url || 'img/default-avatar.svg';
+    const { uri } = data;
+
+    const li = document.createElement('li');
+    li.className = 'rec-item';
+    li.innerHTML = `
+      <img src="${img}">
+      <div class="rec-meta">
+        <span class="rec-title">${r.name}</span>
+        <button class="btn outline play-item"><i class="ph ph-play"></i></button>
+      </div>
+    `;
+    li.querySelector('.play-item').addEventListener('click', () => {
+      if (!token) loginSpotify();
+      else playContextOrUris({ context_uri: uri });
+    });
+
+    ul.appendChild(li);
   }
 }
 
-// ======================
-// BUSCA (B2) fixa e simples
+// === BUSCA ===
 function wireSearch() {
-  const card = document.getElementById('search-card');
   const input = document.getElementById('search-input');
-  const btn = document.getElementById('search-btn');
   const results = document.getElementById('search-results');
-  if (!card || !input || !btn || !results) return;
+  if (!input || !results) return;
 
-  card.style.display = 'block';
+  // Botão X de limpar
+  let btnClear = document.getElementById("clear-search");
+  if (!btnClear) {
+    btnClear = document.createElement("button");
+    btnClear.id = "clear-search";
+    btnClear.textContent = "×";
+    btnClear.style.cssText = `
+    margin-left:6px;
+    cursor:pointer;
+    font-size:1.3rem;
+    background:none;
+    border:none;
+    color:var(--text);
+  `;
+    input.parentElement.appendChild(btnClear);
+  }
+
+  btnClear.addEventListener("click", () => {
+    input.value = "";
+    results.innerHTML = "";
+    results.classList.remove("show"); // 👈 FECHA A CAIXA DE RESULTADOS
+    input.focus();
+  });
+
+  // === Função robusta para pegar imagem sem erro ===
+  function getImg(obj) {
+    // Imagem de faixas (tracks)
+    if (obj?.album?.images?.length) {
+      return obj.album.images[0].url;
+    }
+
+    // Imagem de playlists ou álbuns
+    if (obj?.images?.length) {
+      return obj.images[0].url;
+    }
+
+    // Fallback caso o item realmente não tenha capa
+    return 'img/default-avatar.svg';
+  }
 
   let delay;
-  const perform = async () => {
+  async function perform() {
     const q = input.value.trim();
-
-    if (!q) {
-      results.innerHTML = '';
-      return;
-    }
+    if (!q) return (results.innerHTML = '');
 
     const token = localStorage.getItem('spotify_token');
     if (!token) return;
 
     const res = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track,playlist,album&limit=12`,
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track,playlist,album&limit=14`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    const data = await res.json();
 
+    const data = await res.json();
     const blocks = [];
 
+    // TRACKS
     (data.tracks?.items || []).forEach(t => {
-      const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || 'img/default-avatar.svg';
+      if (!t?.uri) return; // ⬅️ Pula item sem URI
       blocks.push(`
         <li class="rec-item" data-uri="${t.uri}">
-          <img src="${img}" alt="">
+          <img src="${getImg(t)}">
           <div class="rec-meta">
             <span class="rec-title">${t.name} — ${t.artists.map(a => a.name).join(', ')}</span>
             <button class="btn outline play-item"><i class="ph ph-play"></i></button>
           </div>
-        </li>`);
+        </li>
+      `);
     });
 
+    // PLAYLISTS
     (data.playlists?.items || []).forEach(p => {
-      const img = p.images?.[0]?.url || 'img/default-avatar.svg';
+      if (!p?.uri) return; // ⬅️ Pula sem URI
       blocks.push(`
         <li class="rec-item" data-context="${p.uri}">
-          <img src="${img}" alt="">
-          <div class="rec-meta">
-            <span class="rec-title">${p.name}</span>
+          <img src="${getImg(p)}">
+          <div class="rec-meta"><span class="rec-title">${p.name}</span>
             <button class="btn outline play-item"><i class="ph ph-play"></i></button>
           </div>
-        </li>`);
+        </li>
+      `);
     });
 
+    // ÁLBUNS
     (data.albums?.items || []).forEach(a => {
-      const img = a.images?.[0]?.url || 'img/default-avatar.svg';
+      if (!a?.uri) return; // ⬅️ Pula sem URI
       blocks.push(`
         <li class="rec-item" data-context="${a.uri}">
-          <img src="${img}" alt="">
+          <img src="${getImg(a)}">
           <div class="rec-meta">
             <span class="rec-title">${a.name} — ${a.artists.map(x => x.name).join(', ')}</span>
             <button class="btn outline play-item"><i class="ph ph-play"></i></button>
           </div>
-        </li>`);
+        </li>
+      `);
     });
 
     results.innerHTML = blocks.join('');
+    results.classList.toggle('show', blocks.length > 0);
+
   }
 
-  btn.onclick = perform;
-  input.addEventListener('input', () => { clearTimeout(delay); delay = setTimeout(perform, 350); });
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') perform(); if (e.key === 'Escape') { results.innerHTML = ''; input.value = ''; } });
+  input.addEventListener('input', () => {
+    clearTimeout(delay);
+    delay = setTimeout(perform, 350);
+  });
 
-  results.addEventListener('click', async (e) => {
-    const li = e.target.closest('li.rec-item'); if (!li) return;
+  // tocar ao clicar
+  results.addEventListener('click', (e) => {
+    const li = e.target.closest('.rec-item');
+    if (!li) return;
+
     const { uri, context } = li.dataset;
-    const body = uri ? { uris: [uri] } : { context_uri: context };
-    playContextOrUris(body);
-    // limpar após selecionar
+    playContextOrUris(uri ? { uris: [uri] } : { context_uri: context });
+
     results.innerHTML = '';
     input.value = '';
   });
 }
 
-// ======================
-// Boot
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('spotify-login-btn')?.addEventListener('click', loginSpotify);
   checkAuth();
-
-  // Se clicarem nas recomendações sem login, pede login
-  document.getElementById('recommended-container')?.addEventListener('click', (e) => {
-    const li = e.target.closest('li.rec-item'); if (!li) return;
-    const token = localStorage.getItem('spotify_token');
-    if (!token) loginSpotify();
-  });
 });

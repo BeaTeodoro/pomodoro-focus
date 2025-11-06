@@ -6,7 +6,6 @@
   <title>Pomodoro Focus · Core Player (invisível)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* deixa tudo invisível */
     html,
     body {
       margin: 0;
@@ -40,20 +39,22 @@
     <button id="reopen" class="btn">Reabrir</button>
   </div>
 
-  <!-- Spotify SDK só aqui -->
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script>
     // =========================
     // CORE PERSISTENTE GLOBAL
     // =========================
-    const chan = new BroadcastChannel('pf-player'); // canal de comunicação
+    const chan = new BroadcastChannel('pf-player');
     let player = null;
     let token = null;
     let lastState = null;
     let readyDeviceId = null;
     let isConnecting = false;
 
-    // Em alguns navegadores o localStorage demora no popup recém-aberto:
+    // Ticker de progresso (para updates suaves)
+    let tickTimer = null;
+    let lastTickMs = 0;
+
     function getToken() {
       try { return localStorage.getItem('spotify_token'); } catch { return null; }
     }
@@ -62,7 +63,53 @@
       chan.postMessage({ type, payload });
     }
 
-    // Inicia player quando SDK estiver pronto
+    // Emite estado atual para as páginas
+    function emitState(state) {
+      if (!state?.track_window?.current_track) return;
+      const t = state.track_window.current_track;
+      const current = {
+        id: t.id,
+        name: t.name,
+        artist: (t.artists || []).map(a => a.name).join(', '),
+        albumImage: t.album?.images?.[0]?.url || 'img/default-avatar.svg',
+        isPlaying: !state.paused,
+        position: state.position,
+        duration: state.duration
+      };
+      post('core:state', { current });
+    }
+
+    function startTicker() {
+      stopTicker();
+      lastTickMs = Date.now();
+      tickTimer = setInterval(() => {
+        if (!lastState) return;
+        if (lastState.paused) {
+          // parado, só re-emite de vez em quando para manter UI coerente
+          emitState(lastState);
+          return;
+        }
+        const now = Date.now();
+        const dt = now - lastTickMs;
+        lastTickMs = now;
+
+        // avança posição localmente
+        lastState.position = Math.min(
+          lastState.duration || 0,
+          (lastState.position || 0) + dt
+        );
+
+        emitState(lastState);
+      }, 250);
+    }
+
+    function stopTicker() {
+      if (tickTimer) {
+        clearInterval(tickTimer);
+        tickTimer = null;
+      }
+    }
+
     window.onSpotifyWebPlaybackSDKReady = async () => {
       await ensurePlayer();
     };
@@ -71,14 +118,12 @@
       if (player || isConnecting) return;
       token = getToken();
       if (!token) {
-        // avisa as páginas que faltou token
         post('core:no-token');
         return;
       }
       isConnecting = true;
 
       if (!window.Spotify) {
-        // SDK ainda não prontinho (fallback de segurança)
         setTimeout(ensurePlayer, 300);
         return;
       }
@@ -93,7 +138,7 @@
         readyDeviceId = device_id;
         post('core:ready', { device_id });
 
-        // 🔥 Força este device a ser o player ativo
+        // transfere playback para este device
         try {
           await fetch("https://api.spotify.com/v1/me/player", {
             method: "PUT",
@@ -103,7 +148,7 @@
             },
             body: JSON.stringify({
               device_ids: [device_id],
-              play: true // ← aqui estava o problema (estava false!)
+              play: true
             })
           });
         } catch (e) {
@@ -117,50 +162,29 @@
 
       player.addListener('player_state_changed', (state) => {
         lastState = state;
-        if (!state?.track_window?.current_track) return;
-
-        const t = state.track_window.current_track;
-        const current = {
-          id: t.id,
-          name: t.name,
-          artist: (t.artists || []).map(a => a.name).join(', '),
-          albumImage: t.album?.images?.[0]?.url || 'img/default-avatar.svg',
-          isPlaying: !state.paused,
-          position: state.position,
-          duration: state.duration
-        };
-        post('core:state', { current });
+        // sempre que o SDK emitir, reinicia o ticker para sincronizar
+        if (state) {
+          emitState(state);
+          startTicker();
+        } else {
+          stopTicker();
+        }
       });
 
       await player.connect();
       isConnecting = false;
     }
 
-    // Comandos vindos das páginas
+    // Controle vindos das páginas
     chan.onmessage = async (ev) => {
       const { type, payload } = ev.data || {};
       if (!type) return;
 
       if (type === 'core:hello') {
-        // página conectou → responde status
         token = getToken();
         post('core:hello:ack', { hasToken: !!token, device_id: readyDeviceId });
         if (!player) await ensurePlayer();
-        if (lastState?.track_window?.current_track) {
-          const s = lastState;
-          const t = s.track_window.current_track;
-          post('core:state', {
-            current: {
-              id: t.id,
-              name: t.name,
-              artist: (t.artists || []).map(a => a.name).join(', '),
-              albumImage: t.album?.images?.[0]?.url || 'img/default-avatar.svg',
-              isPlaying: !s.paused,
-              position: s.position,
-              duration: s.duration
-            }
-          });
-        }
+        if (lastState) emitState(lastState);
         return;
       }
 
@@ -178,11 +202,18 @@
             await player.nextTrack();
             break;
           case 'ctrl:prev':
-            // comportamento de "voltar pro início" ou voltar faixa anterior é do lado da página (já calculado)
             await player.previousTrack();
             break;
           case 'ctrl:seek':
-            if (typeof payload.ms === 'number') await player.seek(payload.ms);
+            if (typeof payload.ms === 'number') {
+              await player.seek(payload.ms);
+              // força sincronização local logo após o seek
+              if (lastState) {
+                lastState.position = payload.ms;
+                emitState(lastState);
+                startTicker();
+              }
+            }
             break;
           case 'ctrl:volume':
             if (typeof payload.vol === 'number') await player.setVolume(payload.vol);
@@ -200,7 +231,6 @@
             }
             break;
           case 'ctrl:play':
-            // tocar contexto/uri via Web API
             token = getToken();
             if (!token) return;
             await fetch('https://api.spotify.com/v1/me/player/play', {
@@ -220,7 +250,6 @@
       }
     };
 
-    // Caso token chegue depois (ex: login recém-feito)
     window.addEventListener('storage', (e) => {
       if (e.key === 'spotify_token' && e.newValue) {
         token = e.newValue;
@@ -228,7 +257,6 @@
       }
     });
 
-    // Botão de reabrir (uso eventual)
     document.getElementById('reopen')?.addEventListener('click', () => {
       window.focus();
     });

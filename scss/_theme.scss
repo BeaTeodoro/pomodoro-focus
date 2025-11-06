@@ -1,14 +1,13 @@
-@use 'variables' as v;
-
-/* Temas principais */
-
 /* Tema claro */
 :root {
   --bg-main: #e9e9e5;
   --bg-card: #e4e4df;
   --text: #1b1a21;
   --text2: #6f6a66;
+
   --primary: #97363e;
+  --primary-rgb: 151, 54, 62; 
+
   --primary-dark: #7d2e34;
   --accent: #bfb8b3;
   --accent-soft: #dcdcd6;
@@ -21,7 +20,10 @@
   --bg-card: #231d1b;
   --text: #f0ede9;
   --text2: #cfc9c3;
+
   --primary: #997737;
+  --primary-rgb: 153, 119, 55; 
+
   --primary-dark: #836a3c;
   --accent: #a88355;
   --accent-soft: #3a2d26;

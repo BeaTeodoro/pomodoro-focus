@@ -1,9 +1,13 @@
 @use 'variables' as v;
 
-/* ícones sempre seguem o primário */
+/* =========================================================
+   🎵 PÁGINA MÚSICA / PLAYER + BUSCA (dropdown) + RECOMENDAÇÕES
+   ========================================================= */
+
+/* Ícones seguem a cor primária do tema */
 .musica-page i { color: var(--primary); }
 
-/* Página */
+/* ---------- Página ---------- */
 .musica-page {
   background: var(--bg-main);
   color: var(--text);
@@ -14,7 +18,7 @@
   gap: 2rem;
   transition: background v.$transition, color v.$transition;
 
-  /* ---- CARDS PADRONIZADOS (todos iguais ao player) ---- */
+  /* ---------- Card base ---------- */
   .section-card {
     width: 100%;
     max-width: 950px;
@@ -23,16 +27,16 @@
     border: 1px solid var(--accent-soft);
     border-radius: 18px;
     padding: 2rem;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   }
 
-  /* ---- Conexão Spotify ---- */
+  /* ---------- Conexão Spotify ---------- */
   .spotify-connect {
     text-align: center;
 
     .spotify-icon {
       width: 84px; height: 84px;
-      display:flex; align-items:center; justify-content:center;
+      display: flex; align-items: center; justify-content: center;
       border-radius: 50%;
       background: var(--accent);
       color: var(--bg-main);
@@ -40,222 +44,291 @@
     }
 
     .connected {
-      display:flex;
-      flex-direction: column;
-      align-items:center;
-      gap:.8rem;
+      display: flex; flex-direction: column; align-items: center; gap: .8rem;
 
       .big-ok { font-size: 3.2rem; color: var(--primary); }
 
       .profile-pic {
-        width:100px; height:100px;
-        border-radius:50%;
+        width: 100px; height: 100px;
+        border-radius: 50%;
         border: 3px solid var(--primary);
         object-fit: cover;
       }
 
-      .disconnect-btn {
-        font-weight:700;
-        transition:.25s;
+      .btn.outline.strong {
+        font-weight: 700;
+        transition: .25s;
       }
-
-      .disconnect-btn:hover {
-        background:#d34545 !important;
-        border-color:#d34545;
-        color:#fff !important;
+      .btn.outline.strong:hover {
+        background: #d34545 !important;
+        border-color: #d34545;
+        color: #fff !important;
       }
     }
   }
 
-  /* ---- PLAYER PRINCIPAL (C1) ---- */
+  /* =========================================================
+     PLAYER PRINCIPAL
+     ========================================================= */
   .spotify-player {
 
     .player-grid {
-      display:grid;
+      display: grid;
       grid-template-columns: 160px 1fr;
-      gap:2rem;
-      align-items:center;
+      gap: 2rem;
+      align-items: center;
     }
 
     #track-image {
-      width:160px; height:160px;
-      border-radius:16px;
-      object-fit:cover;
-      box-shadow:0 5px 20px rgba(0,0,0,.18);
-      &.updating { opacity:.35; }
+      width: 160px; height: 160px;
+      border-radius: 16px;
+      object-fit: cover;
+      box-shadow: 0 5px 20px rgba(0,0,0,.18);
+      &.updating { opacity: .35; }
     }
 
-    .track-title { font-size:1.4rem; font-weight:700; }
-    .track-artist { color:var(--text2); margin-bottom:.8rem; }
+    .titles {
+      .track-title { font-size: 1.4rem; font-weight: 700; }
+      .track-artist { color: var(--text2); margin-bottom: .8rem; }
+    }
 
-    /* Barra + tempo */
+    /* Linha do tempo + tempos */
     .progress-wrap {
-      display:grid;
+      display: grid;
       grid-template-columns: 52px 1fr 52px;
-      gap:.6rem; align-items:center;
+      gap: .6rem;
+      align-items: center;
 
-      .time { font-size:.9rem; color:var(--text2); text-align:center; }
+      .time { font-size: .9rem; color: var(--text2); text-align: center; }
     }
 
     .progress-bar {
       position: relative;
-      height:8px; border-radius:6px;
+      height: 8px;
+      border-radius: 6px;
       background: var(--accent-soft);
       cursor: pointer;
-      overflow:hidden;
+      overflow: hidden;
+      /* ajuda a ficar acima de elementos vizinhos */
+      isolation: isolate;
 
       #progress-fill {
-        position:absolute; left:0; top:0;
-        height:100%; width:0%;
+        position: absolute; inset: 0 auto 0 0;
+        width: 0%;
         background: var(--primary);
         transition: width .15s linear;
       }
     }
 
+    /* Controles */
     .controls-row {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-top: .8rem;
-      gap:1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: .9rem;
+      gap: 1rem;
     }
 
     .controls-left,
-    .controls-right { display:flex; align-items:center; gap:.6rem; }
+    .controls-right { display: flex; align-items: center; gap: .6rem; }
 
     button {
-      border-radius:50%;
-      width:42px; height:42px;
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer;
-      transition:.25s;
-      font-size:1.2rem;
+      border-radius: 50%;
+      width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: .25s;
+      font-size: 1.2rem;
     }
 
     .btn.primary {
-      background: var(--primary-dark); color:var(--text);
-      &:hover { background: var(--primary-dark); }
+      background: var(--primary-dark);
+      color: var(--text);
+      border: 1px solid transparent;
+      &:hover { filter: brightness(1.02); }
     }
 
     .btn.outline {
-      background:transparent;
-      border:1px solid var(--accent-soft);
-      color:var(--text);
-      &:hover { background:var(--accent-soft); }
+      background: transparent;
+      border: 1px solid var(--accent-soft);
+      color: var(--text);
+      &:hover { background: var(--accent-soft); }
     }
 
     .btn.icon {
-      background:transparent;
-      color:var(--text2);
+      background: transparent;
+      color: var(--text2);
       &:hover,
       &.active { color: var(--primary); }
     }
 
-    /* Curtido preenchido */
+    /* Like preenchido com micro animação */
     #like-btn.active i {
       color: var(--primary);
-      transform: scale(1.25);
-      transition: .3s;
+      transform: scale(1.18);
+      transition: .18s;
     }
 
     /* Repetir / Aleatório destacados */
     #repeat-btn.active i,
     #shuffle-btn.active i {
       color: var(--primary);
-      text-shadow: 0 0 6px rgba(109, 3, 3, 0.616);
-      transform: scale(1.4);
+      text-shadow: 0 0 6px rgba(0,0,0,.15);
+      transform: scale(1.25);
     }
 
-    /* Volume */
+    /* Volume horizontal */
     .volume-control {
-      display:flex; align-items:center; gap:.5rem;
+      display: flex; align-items: center; gap: .55rem;
+
+      #vol-btn {
+        transition: .2s ease;
+        &.muted i { opacity: .55; }
+      }
 
       input[type="range"] {
-        width:110px; cursor:pointer;
+        width: 120px;
+        cursor: pointer;
         accent-color: var(--primary);
       }
-
-      #vol-btn.muted i { opacity:.6; }
     }
 
-    .player-status { margin-top:.6rem; color:var(--text2); }
+    .player-status {
+      margin-top: .65rem;
+      color: var(--text2);
+    }
   }
 
-  /* ---- Busca ---- */
+  /* =========================================================
+     BUSCA — DROPDOWN SOBRE AS RECOMENDAÇÕES
+     ========================================================= */
   .search-card {
-    .card-title { display:flex; align-items:center; gap:.5rem; margin-bottom:.6rem; }
+    position: relative; /* contém o dropdown */
+    z-index: 10;       /* fica acima do card seguinte */
+
+    .card-title {
+      display: flex; align-items: center; gap: .5rem; margin-bottom: .6rem;
+    }
 
     .search-box {
-      display:flex; gap:.6rem; margin-bottom:.8rem;
+      display: flex; gap: .4rem; margin-bottom: 0; /* dropdown vai ocupar o espaço */
 
       input {
-        flex:1;
-        padding:.7rem .9rem;
-        border-radius:10px;
-        border:1px solid var(--accent-soft);
-        background:var(--bg-main);
-        color:var(--text);
+        flex: 1;
+        padding: .7rem .9rem;
+        border-radius: 10px;
+        border: 1px solid var(--accent-soft);
+        background: var(--bg-main);
+        color: var(--text);
+        outline: none;
+        transition: border-color .2s ease;
+        &:focus { border-color: var(--primary); }
       }
+
+      /* botão X que o JS injeta */
+      #clear-search {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        border: 1px solid var(--accent-soft);
+        background: var(--bg-main);
+        color: var(--text);
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: .2s ease;
+        &:hover { border-color: var(--primary); color: var(--primary); }
+      }
+    }
+
+    /* Dropdown de resultados */
+    #search-results {
+      position: absolute;
+      left: 2rem; right: 2rem; /* acompanha padding do card */
+      top: calc(100% + .55rem);
+      background: var(--bg-card);
+      border: 1px solid var(--accent-soft);
+      border-radius: 12px;
+      list-style: none;
+      margin: 0;
+      padding: .5rem;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+      max-height: 360px;
+      overflow: auto;
+      z-index: 999; /* acima de tudo que vier depois */
     }
   }
 
-  /* ---- Recomendações ---- */
-  .rec-card .card-title { display:flex; align-items:center; gap:.5rem; margin-bottom:.8rem; }
+  /* =========================================================
+     RECOMENDAÇÕES
+     ========================================================= */
+  .rec-card {
+    .card-title { display: flex; align-items: center; gap: .5rem; margin-bottom: .8rem; }
+  }
 
   .rec-list {
-    list-style:none;
-    display:flex; flex-direction:column;
-    gap:.6rem; padding:0;
+    list-style: none;
+    display: flex; flex-direction: column;
+    gap: .6rem; padding: 0;
   }
 
   .rec-item {
-    display:flex; align-items:center; gap:.8rem;
-    border:1px solid var(--accent-soft);
-    padding:.7rem .8rem;
-    border-radius:12px;
+    display: flex; align-items: center; gap: .8rem;
+    border: 1px solid var(--accent-soft);
+    padding: .7rem .8rem;
+    border-radius: 12px;
     background: var(--bg-card);
-    cursor:pointer;
-    transition:.2s;
+    cursor: pointer;
+    transition: .18s;
     &:hover { background: var(--accent-soft); }
   }
 
   .rec-item img {
-    width:46px; height:46px;
-    border-radius:8px; object-fit:cover;
+    width: 46px; height: 46px;
+    border-radius: 8px; object-fit: cover;
   }
 
   .rec-meta {
-    flex:1; display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+    flex: 1; display: flex; align-items: center; justify-content: space-between; gap: .6rem;
   }
 
   .rec-title {
-    color:var(--text);
-    font-weight:600;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 }
 
-/* ---- DARK MODE ---- */
+/* ---------- Dark mode ajustes ---------- */
 [data-theme="dark"] {
-  .rec-item { background:#1f1a18 !important; }
-  .spotify-connect .spotify-icon { background: var(--primary); color: var(--bg-main); }
+  .musica-page {
+    .rec-item { background: #1f1a18 !important; }
+    .spotify-connect .spotify-icon { background: var(--primary); color: var(--bg-main); }
+
+    .search-card #search-results {
+      background: #201b19;
+      border-color: #312621;
+    }
+  }
 }
 
-/* ---- RESPONSIVO ---- */
-@media (max-width: 820px) {
-  .musica-page { padding: 2rem 1rem; gap:1.4rem; }
+/* ---------- Responsivo ---------- */
+@media (max-width: 880px) {
+  .musica-page { padding: 2rem 1rem; gap: 1.4rem; }
 
-  .spotify-player .player-grid {
+  .musica-page .spotify-player .player-grid {
     grid-template-columns: 1fr;
-    text-align:center;
+    text-align: center;
   }
 
-  #track-image {
-    margin:0 auto;
-    width:120px; height:120px;
+  .musica-page #track-image {
+    margin: 0 auto;
+    width: 128px; height: 128px;
   }
 
-  .spotify-player .controls-row {
-    flex-direction:column; gap:.8rem;
+  .musica-page .spotify-player .controls-row {
+    flex-direction: column; gap: .85rem;
+  }
+
+  /* Dropdown ocupa toda a largura do card em telas menores */
+  .musica-page .search-card #search-results {
+    left: 1rem; right: 1rem;
   }
 }
