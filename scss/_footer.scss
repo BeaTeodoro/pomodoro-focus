@@ -1,242 +1,81 @@
 @use 'variables' as v;
 
-/* Footer e mini player Spotify */
 .footer {
   background-color: var(--bg-card);
   border-top: 1px solid var(--accent-soft);
   color: var(--text);
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
+  padding: .6rem 1rem;
+  font-size: .9rem;
   transition: background v.$transition, color v.$transition;
 
   .footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    max-width: v.$max-width;
-    margin: 0 auto;
-    gap: 1rem;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap;
+    max-width: v.$max-width; margin:0 auto; gap:1rem;
   }
 
-  /* Mini player */
   .mini-player-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.8rem;
-    position: relative;
-    flex-shrink: 0;
+    display:flex; align-items:center; justify-content:flex-start; gap:.6rem; position:relative; flex-shrink:0;
 
-    .spotify-icon {
-      font-size: 1.6rem;
-      color: #1db954;
-      transition: color 0.3s ease, transform 0.3s ease;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-    }
+    .spotify-icon { font-size:1.4rem; color: var(--primary); }
 
     .player-buttons {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-
+      display:flex; align-items:center; gap:.35rem;
       button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--text);
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.25s ease, color 0.25s ease;
-
-        &:hover {
-          transform: scale(1.1);
-          color: var(--primary);
-        }
-
-        &.play-btn i {
-          font-size: 1.3rem;
-        }
+        background:none; border:none; cursor:pointer; color:var(--text);
+        font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:.2s;
+        &:hover { transform: scale(1.08); color: var(--primary); }
+        &.play-btn i { font-size:1.25rem; }
       }
+      .mini-volume { position:relative; }
+      .vol-btn { background:none; border:none; cursor:pointer; color:var(--text); font-size:1.05rem; }
+      .vol-btn:hover { color: var(--primary); }
+      .mini-volume-pop {
+        position:absolute; bottom:140%; left:50%; transform: translateX(-50%);
+        background: var(--bg-card); border:1px solid var(--accent-soft); border-radius:10px;
+        padding:.5rem .6rem; display:none; box-shadow:0 6px 16px rgba(0,0,0,.12);
+      }
+      .mini-volume-pop.show { display:block; }
+      #mini-volume-range {
+      writing-mode: bt-lr;
+      appearance: slider-vertical;       /* ✅ padrão */
+      -webkit-appearance: slider-vertical; /* ✅ prefixado */
+      width: 26px;
+      height: 95px;
+      accent-color: var(--primary);
+}
+
     }
 
     .mini-track-info {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.1;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-
-      .track-title {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: var(--text);
-      }
-
-      .track-artist {
-        font-size: 0.75rem;
-        color: var(--text2);
-        opacity: 0.8;
-      }
-    }
-
-    /* Linha de progresso */
-    .mini-progress-bar {
-      position: absolute;
-      bottom: -3px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      border-radius: 4px;
-
-      .progress-fill {
-        height: 100%;
-        width: 0%;
-        background: #1db954;
-        transition: width 0.4s linear;
-      }
-
-      .progress-fill.playing {
-        animation: glowPulse 2s ease-in-out infinite;
-      }
+      display:flex; flex-direction:column; line-height:1.1; max-width:220px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+      .track-title { font-weight:600; font-size:.9rem; color:var(--text); }
+      .track-artist { font-size:.78rem; color:var(--text2); opacity:.9; }
+      .mini-progress-bar { margin-top:.25rem; height:2px; width:100%; background: rgba(0,0,0,.08); border-radius:3px; overflow:hidden; }
+      .progress-fill { height:100%; width:0%; background: var(--primary); transition: width .3s linear; }
     }
   }
 
-  /* Texto central */
-  .footer-center {
-    text-align: center;
-    flex-grow: 1;
-
-    strong {
-      color: var(--primary);
-    }
+  .footer-center { text-align:center; flex-grow:1;
+    strong { color: var(--primary); }
   }
 
-  /* Ícones sociais */
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-
-    a {
-      color: var(--primary);
-      font-size: 1.3rem;
-      transition: color 0.25s ease, transform 0.25s ease;
-
-      &:hover {
-        color: var(--primary-dark);
-        transform: translateY(-2px);
-      }
-    }
+  .social-links { display:flex; align-items:center; gap:.7rem;
+    a { color: var(--primary); font-size:1.5rem; transition:.2s; &:hover { color: var(--primary-dark); transform: translateY(-2px); } }
   }
 }
 
-/* Tema escuro */
-[data-theme='dark'] {
-  .footer {
-    background-color: #1a1514;
-    border-color: #2d2725;
-    color: #eaeaea;
-
-    .footer-center strong {
-      color: #c39d63;
-    }
-
-    .social-links a {
-      color: #c39d63;
-
-      &:hover {
-        color: #b28b52;
-      }
-    }
-
-    .mini-player-footer {
-      .spotify-icon {
-        color: #c39d63;
-      }
-
-      .player-buttons button:hover {
-        color: #c39d63;
-      }
-
-      .mini-progress-bar .progress-fill {
-        background: #c39d63;
-      }
-
-      .progress-fill.playing {
-        animation: glowPulseDark 2s ease-in-out infinite;
-      }
-
-      .track-title {
-        color: #eaeaea;
-      }
-
-      .track-artist {
-        color: #c2b8b0;
-      }
-    }
-  }
+[data-theme='dark'] .footer {
+  background:#1a1514; border-color:#2d2725; color:#eaeaea;
+  .footer-center strong { color: var(--primary); }
 }
 
-/* Animações */
-@keyframes glowPulse {
-  0%, 100% {
-    box-shadow: 0 0 4px rgba(29, 185, 84, 0.5), 0 0 10px rgba(29, 185, 84, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.7), 0 0 20px rgba(29, 185, 84, 0.6);
-  }
+@media (max-width: 860px) {
+  .footer { padding:.75rem .8rem; }
+  .footer .footer-content { gap:.7rem; }
+  .footer .mini-player-footer .mini-track-info { max-width: 160px; }
 }
 
-@keyframes glowPulseDark {
-  0%, 100% {
-    box-shadow: 0 0 4px rgba(195, 157, 99, 0.4), 0 0 10px rgba(195, 157, 99, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 10px rgba(195, 157, 99, 0.7), 0 0 20px rgba(195, 157, 99, 0.6);
-  }
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .footer {
-    padding: 0.8rem 0.6rem;
-
-    .footer-content {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.6rem;
-    }
-
-    .mini-player-footer {
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      width: 100%;
-
-      .mini-progress-bar {
-        position: relative;
-        bottom: 0;
-        width: 80%;
-      }
-
-      .mini-track-info {
-        align-items: center;
-      }
-    }
-
-    .social-links {
-      justify-content: center;
-    }
-  }
+@media (max-width: 640px) {
+  .footer .footer-content { flex-direction:column; align-items:center; gap:.55rem; }
+  .footer .mini-player-footer { width:100%; justify-content:center; }
 }

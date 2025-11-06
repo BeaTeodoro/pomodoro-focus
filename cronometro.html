@@ -120,24 +120,35 @@
     </section>
   </main>
 
-  <footer class="footer">
+  <!-- Footer com mini-player -->
+  <footer class="footer" aria-label="Rodapé">
     <div class="footer-content container">
-      <div class="mini-player-footer">
-        <i class="ph ph-spotify-logo spotify-icon"></i>
+      <div class="mini-player-footer" aria-label="Mini player do Spotify">
+        <i class="ph ph-spotify-logo spotify-icon" aria-hidden="true"></i>
 
-        <div class="player-buttons">
-          <button id="mini-prev"><i class="ph ph-skip-back"></i></button>
-          <button id="mini-play" class="play-btn"><i class="ph ph-play"></i></button>
-          <button id="mini-next"><i class="ph ph-skip-forward"></i></button>
+        <div class="player-buttons" role="group" aria-label="Controles do mini player">
+          <button id="mini-prev" title="Anterior" type="button"><i class="ph ph-skip-back"></i></button>
+          <button id="mini-play" class="play-btn" title="Tocar/Pausar" type="button"><i class="ph ph-play"></i></button>
+          <button id="mini-next" title="Próxima" type="button"><i class="ph ph-skip-forward"></i></button>
+
+          <!-- volume popover que abre pra cima -->
+          <div class="mini-volume">
+            <button id="mini-vol-btn" class="vol-btn" title="Volume" type="button"><i
+                class="ph ph-speaker-high"></i></button>
+            <div class="mini-volume-pop" aria-hidden="true">
+              <input id="mini-volume-range" type="range" min="0" max="100" value="70" orient="vertical"
+                aria-label="Volume do mini player" />
+            </div>
+          </div>
         </div>
 
         <div class="mini-track-info">
           <p class="track-title">Título da música</p>
           <span class="track-artist">Artista</span>
-        </div>
-
-        <div class="mini-progress-bar">
-          <div class="progress-fill"></div>
+          <div class="mini-progress-bar" aria-label="Progresso" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+            aria-valuenow="0">
+            <div class="progress-fill"></div>
+          </div>
         </div>
       </div>
 
@@ -145,16 +156,18 @@
         © 2025 <strong>Pomodoro Focus</strong> — Desenvolvido por <strong>Beatriz Teodoro</strong> 🍅
       </p>
 
-      <div class="social-links">
-        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn">
+      <div class="social-links" aria-label="Redes sociais">
+        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn"
+          rel="noopener noreferrer">
           <i class="ph ph-linkedin-logo"></i>
         </a>
-        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub">
+        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub" rel="noopener noreferrer">
           <i class="ph ph-github-logo"></i>
         </a>
       </div>
     </div>
   </footer>
+
 
   <!-- Scripts -->
   <script src="js/theme.js"></script>
@@ -162,6 +175,9 @@
   <script src="js/timer.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
+  <iframe id="player-core" src="player-core.html"
+    style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
+
 </body>
 
 </html>

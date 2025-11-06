@@ -1,86 +1,68 @@
 import {
-  initSpotifyPlayer,
-  nextTrack,
-  onPlayerStateChange,
-  onTrackChange,
-  playPause,
-  previousTrack,
+  nextTrack, onPlayerStateChange, onTrackChange,
+  playPause, previousTrack, setVolume
 } from "./spotifyController.js";
-
-document.addEventListener("DOMContentLoaded", () => {
-  const titleEl = document.querySelector(".track-title");
-  const artistEl = document.querySelector(".track-artist");
-  const playBtn = document.querySelector(".play-btn i");
-  const prevBtn = document.getElementById("mini-prev");
-  const nextBtn = document.getElementById("mini-next");
-  const progressFill = document.querySelector(".mini-progress-bar .progress-fill");
-
-  initSpotifyPlayer();
-
-  onTrackChange((track) => {
-    if (!track) return;
-    titleEl.textContent = track.name || "—";
-    artistEl.textContent = track.artist || "—";
-    playBtn.className = track.isPlaying ? "ph ph-pause" : "ph ph-play";
-  });
-
-  prevBtn.addEventListener("click", previousTrack);
-  nextBtn.addEventListener("click", nextTrack);
-  playBtn.parentElement.addEventListener("click", playPause);
-
-  let progressInterval;
-
-  onPlayerStateChange((state) => {
-    if (!state) return;
-    const { position, duration, paused } = state;
-    const percent = (position / duration) * 100;
-    progressFill.style.width = `${percent}%`;
-
-    clearInterval(progressInterval);
-    if (!paused && duration > 0) {
-      progressInterval = setInterval(() => {
-        const updated = ((state.position + 500) / duration) * 100;
-        progressFill.style.width = `${Math.min(updated, 100)}%`;
-      }, 500);
-    }
-  });
-});
-// Mini Player - sincroniza com o Spotify
 
 document.addEventListener("DOMContentLoaded", () => {
   const titleEl = document.querySelector(".mini-track-info .track-title");
   const artistEl = document.querySelector(".mini-track-info .track-artist");
-  const playBtn = document.querySelector("#mini-play i");
+  const playIcon = document.querySelector("#mini-play i");
   const prevBtn = document.getElementById("mini-prev");
   const nextBtn = document.getElementById("mini-next");
   const progressFill = document.querySelector(".mini-progress-bar .progress-fill");
 
-  if (!titleEl || !artistEl || !playBtn || !prevBtn || !nextBtn || !progressFill) return;
+  const volBtn = document.getElementById("mini-vol-btn");
+  const volPop = document.querySelector(".mini-volume-pop");
+  const volRange = document.getElementById("mini-volume-range");
+  // === RESTAURAR VOLUME SALVO ===
+  const savedVol = localStorage.getItem("pf_volume");
+  if (savedVol !== null) {
+    volRange.value = savedVol;
+    setVolume(savedVol);
+    if (+savedVol === 0) volBtn.classList.add("muted");
+  }
 
-  initSpotifyPlayer();
+  if (!titleEl || !artistEl || !playIcon || !prevBtn || !nextBtn || !progressFill) return;
 
-  // Atualiza título / artista / ícone play-pause
-  onTrackChange((track) => {
-    titleEl.textContent = track?.name || "—";
-    artistEl.textContent = track?.artist || "—";
-    playBtn.className = track.isPlaying ? "ph ph-pause" : "ph ph-play";
+  onTrackChange((t) => {
+    titleEl.textContent = t?.name || "—";
+    artistEl.textContent = t?.artist || "—";
+    playIcon.className = t?.isPlaying ? "ph ph-pause" : "ph ph-play";
   });
 
-  // Controles
   prevBtn.addEventListener("click", previousTrack);
   nextBtn.addEventListener("click", nextTrack);
-  playBtn.parentElement.addEventListener("click", playPause);
+  document.getElementById("mini-play").addEventListener("click", playPause);
 
-  // Atualiza barra de progresso
-  onPlayerStateChange((state) => {
-    if (!state) return;
+  onPlayerStateChange((s) => {
+    if (!s?.duration) return;
+    const pct = (s.position / s.duration) * 100;
+    progressFill.style.width = `${pct}%`;
+    playIcon.className = s.paused ? "ph ph-play" : "ph ph-pause";
+  });
 
-    const { position, duration, paused } = state;
-    if (!duration) return;
+  // volume popover + mute
+  let muted = false;
+  volBtn.addEventListener("click", () => {
+    muted = !muted;
+    if (muted) {
+      volBtn.classList.add("muted");
+      volRange.dataset.prev = volRange.value;
+      volRange.value = 0;
+      setVolume(0);
+    } else {
+      volBtn.classList.remove("muted");
+      const back = volRange.dataset.prev || "70";
+      volRange.value = back;
+      setVolume(back);
+    }
+    volPop.classList.toggle("show");
+  });
 
-    const percent = (position / duration) * 100;
-    progressFill.style.width = `${percent}%`;
-
-    playBtn.className = paused ? "ph ph-play" : "ph ph-pause";
+  volRange.addEventListener("input", (e) => {
+    const v = e.target.value;
+    setVolume(v);
+    if (+v === 0) volBtn.classList.add("muted");
+    else volBtn.classList.remove("muted");
   });
 });

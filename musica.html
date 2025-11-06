@@ -8,18 +8,16 @@
       try {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-      } catch {
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
+      } catch { document.documentElement.setAttribute('data-theme', 'light'); }
     })();
   </script>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pomodoro Focus | Música</title>
-
   <link rel="stylesheet" href="css/style.css" />
   <link rel="icon" type="image/png" href="img/favicon.png" />
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/fill/style.css">
+
 </head>
 
 <body>
@@ -60,66 +58,105 @@
   </nav>
 
   <main class="musica-page">
-    <!-- Conexão com Spotify -->
+    <!-- Conexão -->
     <section class="section-card spotify-connect">
       <div class="spotify-icon">
-        <i class="ph ph-music-notes"></i>
+        <i class="ph ph-spotify-logo"></i>
       </div>
       <h2>Conectar com Spotify</h2>
-      <p>Conecte sua conta Spotify para ouvir músicas durante suas sessões Pomodoro.</p>
-
+      <p>Conecte sua conta para ouvir durante o seu foco.</p>
       <button id="spotify-login-btn" type="button" class="btn primary">
         <i class="ph ph-spotify-logo"></i> Conectar Spotify
       </button>
-
-      <p class="info-text">Você será redirecionado para o Spotify para autorizar o acesso.</p>
+      <p class="info-text">Você será redirecionado para autorizar o acesso.</p>
     </section>
 
-    <!-- Player Spotify -->
-    <section class="section-card spotify-player" id="player-section" style="display: none;">
-      <h3><i class="ph ph-speaker-high"></i> Reprodutor Spotify</h3>
-      <p id="player-status">Conectando ao Spotify...</p>
+    <!-- Player principal (C1) -->
+    <section class="section-card spotify-player" id="player-section" style="display:none;">
+      <div class="player-grid">
+        <img id="track-image" src="img/default-avatar.svg" alt="Capa da música" />
+        <div class="player-right">
+          <div class="titles">
+            <p id="track-title" class="track-title">—</p>
+            <p id="track-artist" class="track-artist">—</p>
+          </div>
 
-      <div class="player-container">
-        <img id="track-image" src="img/default-avatar.svg" alt="Capa da música" class="track-cover" />
-        <div class="track-details">
-          <p id="track-title" class="track-title">Título da música</p>
-          <p id="track-artist" class="track-artist">Artista</p>
+          <div class="progress-wrap">
+            <span id="elapsed" class="time">0:00</span>
+            <div class="progress-bar" id="progress-bar" aria-label="Linha do tempo">
+              <div id="progress-fill"></div>
+            </div>
+            <span id="duration" class="time">0:00</span>
+          </div>
+
+          <div class="controls-row">
+            <div class="controls-left">
+              <button id="prev-btn" class="btn outline" title="Anterior"><i class="ph ph-skip-back"></i></button>
+              <button id="play-pause-btn" class="btn primary" title="Tocar/Pausar"><i class="ph ph-play"></i></button>
+              <button id="next-btn" class="btn outline" title="Próxima"><i class="ph ph-skip-forward"></i></button>
+            </div>
+
+            <div class="controls-right">
+              <button id="like-btn" class="btn icon" title="Curtir"><i class="ph ph-heart"></i></button>
+              <button id="repeat-btn" class="btn icon" title="Repetir"><i class="ph ph-repeat"></i></button>
+              <button id="shuffle-btn" class="btn icon" title="Aleatório"><i class="ph ph-shuffle"></i></button>
+
+              <div class="volume-control" title="Volume">
+                <button id="vol-btn" class="btn icon" aria-label="Mute/Volume">
+                  <i class="ph ph-speaker-high"></i>
+                </button>
+                <input id="volume-slider" type="range" min="0" max="100" value="70">
+              </div>
+            </div>
+          </div>
+
+          <p id="player-status" class="player-status">Conectando ao Spotify...</p>
         </div>
       </div>
+    </section>
+    <!-- Busca Spotify -->
+    <section class="section-card search-card" id="search-card">
+      <h3 class="card-title"><i class="ph ph-magnifying-glass"></i> Buscar no Spotify</h3>
 
-      <div class="progress-bar">
-        <div id="progress-fill"></div>
+      <div class="search-box">
+        <input id="search-input" type="text" placeholder="Busque músicas, artistas ou playlists…" />
       </div>
 
-      <div class="player-controls">
-        <button id="prev-btn" class="btn outline"><i class="ph ph-skip-back"></i></button>
-        <button id="play-pause-btn" class="btn primary"><i class="ph ph-play"></i></button>
-        <button id="next-btn" class="btn outline"><i class="ph ph-skip-forward"></i></button>
-      </div>
+      <ul id="search-results" class="rec-list"></ul>
+    </section>
+
+    <!-- Recomendações -->
+    <section class="section-card rec-card" id="recommended">
+      <h3 class="card-title"><i class="ph ph-headphones"></i> Recomendações para Foco</h3>
+      <ul id="recommended-container" class="rec-list"><!-- JS --></ul>
     </section>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer com mini-player (2) -->
   <footer class="footer">
     <div class="footer-content container">
       <div class="mini-player-footer">
         <i class="ph ph-spotify-logo spotify-icon"></i>
 
         <div class="player-buttons">
-          <button id="mini-prev"><i class="ph ph-skip-back"></i></button>
-          <button id="mini-play" class="play-btn"><i class="ph ph-play"></i></button>
-          <button id="mini-next"><i class="ph ph-skip-forward"></i></button>
+          <button id="mini-prev" title="Anterior"><i class="ph ph-skip-back"></i></button>
+          <button id="mini-play" class="play-btn" title="Tocar/Pausar"><i class="ph ph-play"></i></button>
+          <button id="mini-next" title="Próxima"><i class="ph ph-skip-forward"></i></button>
+
+          <div class="mini-volume">
+            <button id="mini-vol-btn" class="vol-btn" title="Volume/Mudo"><i class="ph ph-speaker-high"></i></button>
+            <div class="mini-volume-pop">
+              <input id="mini-volume-range" type="range" min="0" max="100" value="70" orient="vertical" />
+            </div>
+          </div>
         </div>
 
         <div class="mini-track-info">
-          <p class="track-title">Título da música</p>
-          <span class="track-artist">Artista</span>
-        </div>
-
-        <!-- Barra de progresso -->
-        <div class="mini-progress-bar">
-          <div class="progress-fill"></div>
+          <p class="track-title">—</p>
+          <span class="track-artist">—</span>
+          <div class="mini-progress-bar">
+            <div class="progress-fill"></div>
+          </div>
         </div>
       </div>
 
@@ -128,24 +165,21 @@
       </p>
 
       <div class="social-links">
-        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn">
-          <i class="ph ph-linkedin-logo"></i>
-        </a>
-        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub">
-          <i class="ph ph-github-logo"></i>
-        </a>
+        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn"><i
+            class="ph ph-linkedin-logo"></i></a>
+        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub"><i
+            class="ph ph-github-logo"></i></a>
       </div>
     </div>
   </footer>
 
-  <!-- SDK Spotify -->
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
-
-  <!-- Scripts -->
   <script src="js/theme.js"></script>
   <script src="js/header.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
+  <iframe id="player-core" src="./player-core.html"
+    style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
+
 
 </body>
 

@@ -1,105 +1,153 @@
-// Controle do Spotify Player
+// js/spotifyController.js
+// Camada de controle: envia comandos ao player-core e recebe estado.
 
-let spotifyPlayer = null;
-let currentTrack = null;
-let accessToken = localStorage.getItem("spotify_token");
+let bc = null;
+let coreWin = null;
+let lastTrack = null;
+let lastState = null;
+let lastBackClick = 0;
 
 const trackListeners = new Set();
 const stateListeners = new Set();
 
-// Inicializa o player Spotify
+function channel() {
+  if (!bc) {
+    bc = new BroadcastChannel('pf-player');
+    bc.onmessage = (ev) => {
+      const { type, payload } = ev.data || {};
+      if (type === 'core:state') {
+        lastTrack = payload.current;
+        trackListeners.forEach(cb => cb(lastTrack));
+        stateListeners.forEach(cb => cb({
+          position: lastTrack.position,
+          duration: lastTrack.duration,
+          paused: !lastTrack.isPlaying
+        }));
+      } else if (type === 'core:hello:ack') {
+        // já recebeu ack do core
+      } else if (type === 'core:no-token') {
+        // sem token
+      }
+    };
+  }
+  return bc;
+}
+
 export function initSpotifyPlayer() {
-  accessToken = localStorage.getItem("spotify_token");
-  if (!accessToken) {
-    console.warn("⚠️ Nenhum token Spotify encontrado.");
-    return;
-  }
-
-  // Evita criar múltiplos players
-  if (spotifyPlayer) return;
-
-  // Aguarda o SDK carregar se ainda não estiver pronto
-  if (!window.Spotify) {
-    console.log("⌛ Aguardando SDK Spotify carregar...");
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      console.log("🎧 SDK Spotify pronto — inicializando player...");
-      setupPlayer();
-    };
-    return;
-  }
-
-  setupPlayer();
+  const c = channel();
+  c.postMessage({ type: "core:hello" });
+  c.postMessage({ type: "ctrl:transfer", payload: { play: false } });
 }
 
-// Configuração do player
-function setupPlayer() {
-  spotifyPlayer = new Spotify.Player({
-    name: "Pomodoro Focus Player",
-    getOAuthToken: cb => cb(accessToken),
-    volume: 0.5,
-  });
-
-  // Quando o player estiver pronto
-  spotifyPlayer.addListener("ready", ({ device_id }) => {
-    console.log("✅ Player pronto:", device_id);
-    const status = document.getElementById("player-status");
-    if (status) status.textContent = "Player conectado ao Spotify!";
-  });
-
-  // Quando o player for desconectado
-  spotifyPlayer.addListener("not_ready", ({ device_id }) => {
-    console.warn("⚠️ Player desconectado:", device_id);
-    const status = document.getElementById("player-status");
-    if (status) status.textContent = "Player desconectado. Recarregue a página.";
-  });
-
-  // Estado de reprodução alterado
-  spotifyPlayer.addListener("player_state_changed", (state) => {
-    if (!state?.track_window?.current_track) return;
-
-    const track = state.track_window.current_track;
-    currentTrack = {
-      name: track.name,
-      artist: track.artists.map(a => a.name).join(", "),
-      albumImage: track.album?.images?.[0]?.url || "img/default-avatar.svg",
-      isPlaying: !state.paused,
-    };
-
-    trackListeners.forEach(cb => cb(currentTrack));
-    stateListeners.forEach(cb => cb(state));
-  });
-
-  spotifyPlayer.connect().then(success => {
-    if (success) console.log("🎵 Conexão com Spotify estabelecida.");
-    else console.error("❌ Falha ao conectar com Spotify Player.");
-  });
+// listeners
+export function onTrackChange(cb) {
+  trackListeners.add(cb);
+  if (lastTrack) cb(lastTrack);
+  return () => trackListeners.delete(cb);
 }
 
-// Listener de faixa
-export function onTrackChange(callback) {
-  trackListeners.add(callback);
-  if (currentTrack) callback(currentTrack);
-  return () => trackListeners.delete(callback);
+export function onPlayerStateChange(cb) {
+  stateListeners.add(cb);
+  if (lastState) cb(lastState);
+  return () => stateListeners.delete(cb);
 }
 
-// Listener de estado
-export function onPlayerStateChange(callback) {
-  stateListeners.add(callback);
-  return () => stateListeners.delete(callback);
-}
-
-// Controles básicos
+// controles básicos
 export function playPause() {
-  if (!spotifyPlayer) return;
-  spotifyPlayer.togglePlay();
+  channel().postMessage({ type: 'ctrl:playpause' });
 }
-
 export function nextTrack() {
-  if (!spotifyPlayer) return;
-  spotifyPlayer.nextTrack();
+  channel().postMessage({ type: 'ctrl:next' });
+}
+export function previousTrack() {
+  // Dois cliques seguidos ou se já tocou alguns segundos → volta ao início.
+  const now = Date.now();
+  if ((lastTrack?.position ?? 0) > 3000 || now - lastBackClick < 350) {
+    // seek to 0
+    seekPercent(0);
+  } else {
+    channel().postMessage({ type: 'ctrl:prev' });
+  }
+  lastBackClick = now;
 }
 
-export function previousTrack() {
-  if (!spotifyPlayer) return;
-  spotifyPlayer.previousTrack();
+export function setVolume(value) {
+  const vol = Math.max(0, Math.min(1, Number(value) / 100));
+  try { localStorage.setItem('pf_volume', value); } catch { }
+  channel().postMessage({ type: 'ctrl:volume', payload: { vol } });
+}
+
+
+export function seek(percent) {
+  // percent 0–100
+  if (!lastTrack?.duration) return;
+  const ms = (percent / 100) * lastTrack.duration;
+  channel().postMessage({ type: 'ctrl:seek', payload: { ms } });
+}
+function seekPercent(p) { seek(p); }
+
+// Ações Web API que não dependem do SDK
+function getToken() {
+  try { return localStorage.getItem('spotify_token'); } catch { return null; }
+}
+
+// like / repeat / shuffle via Web API
+export async function toggleLike(trackId) {
+  const token = getToken();
+  if (!token || !trackId) return false;
+
+  // checa se já está salva
+  const chk = await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${trackId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json()).catch(() => [false]);
+
+  const liked = !!chk?.[0];
+  const method = liked ? 'DELETE' : 'PUT';
+
+  const res = await fetch(`https://api.spotify.com/v1/me/tracks?ids=${trackId}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  return res.ok ? !liked : liked; // retorna novo estado (true = curtida ativa)
+}
+
+export async function toggleShuffle() {
+  const token = getToken();
+  if (!token) return false;
+
+  // tenta inverter o estado perguntando player
+  // sem endpoint de leitura direto, alterna para true/false por clique
+  // aqui, alternamos para true, depois a página alterna ícone; num 2º clique, false
+  // Para simplificar: alterna sempre true/false com um "flip" em memória:
+  window.__pf_shuffle = !window.__pf_shuffle;
+  const res = await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=${window.__pf_shuffle}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return res.ok ? window.__pf_shuffle : !window.__pf_shuffle;
+}
+
+export async function toggleRepeat() {
+  const token = getToken();
+  if (!token) return 'off';
+  // alterna entre off → context → track → off (simples)
+  const order = ['off', 'context', 'track'];
+  const i = order.indexOf(window.__pf_repeat || 'off');
+  const next = order[(i + 1) % order.length];
+
+  const res = await fetch(`https://api.spotify.com/v1/me/player/repeat?state=${next}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (res.ok) {
+    window.__pf_repeat = next;
+    return next;
+  }
+  return window.__pf_repeat || 'off';
+}
+
+// tocar algo específico a partir da página
+export function playContextOrUris(body) {
+  channel().postMessage({ type: 'ctrl:play', payload: { body } });
 }

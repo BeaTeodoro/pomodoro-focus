@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Pomodoro Focus · Core Player (invisível)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* deixa tudo invisível */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+
+    .notice {
+      font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: #444;
+      padding: 12px;
+      display: none;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="notice" id="notice">
+    O player principal está carregado. Se você fechou esta janela, clique para reabrir nas páginas.
+    <button id="reopen" class="btn">Reabrir</button>
+  </div>
+
+  <!-- Spotify SDK só aqui -->
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script>
+    // =========================
+    // CORE PERSISTENTE GLOBAL
+    // =========================
+    const chan = new BroadcastChannel('pf-player'); // canal de comunicação
+    let player = null;
+    let token = null;
+    let lastState = null;
+    let readyDeviceId = null;
+    let isConnecting = false;
+
+    // Em alguns navegadores o localStorage demora no popup recém-aberto:
+    function getToken() {
+      try { return localStorage.getItem('spotify_token'); } catch { return null; }
+    }
+
+    function post(type, payload = {}) {
+      chan.postMessage({ type, payload });
+    }
+
+    // Inicia player quando SDK estiver pronto
+    window.onSpotifyWebPlaybackSDKReady = async () => {
+      await ensurePlayer();
+    };
+
+    async function ensurePlayer() {
+      if (player || isConnecting) return;
+      token = getToken();
+      if (!token) {
+        // avisa as páginas que faltou token
+        post('core:no-token');
+        return;
+      }
+      isConnecting = true;
+
+      if (!window.Spotify) {
+        // SDK ainda não prontinho (fallback de segurança)
+        setTimeout(ensurePlayer, 300);
+        return;
+      }
+
+      player = new Spotify.Player({
+        name: 'Pomodoro Focus Player',
+        getOAuthToken: cb => cb(token),
+        volume: 0.7
+      });
+
+      player.addListener('ready', async ({ device_id }) => {
+        readyDeviceId = device_id;
+        post('core:ready', { device_id });
+
+        // 🔥 Força este device a ser o player ativo
+        try {
+          await fetch("https://api.spotify.com/v1/me/player", {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              device_ids: [device_id],
+              play: true // ← aqui estava o problema (estava false!)
+            })
+          });
+        } catch (e) {
+          console.warn("Falhou ao transferir playback:", e);
+        }
+      });
+
+      player.addListener('not_ready', ({ device_id }) => {
+        post('core:not-ready', { device_id });
+      });
+
+      player.addListener('player_state_changed', (state) => {
+        lastState = state;
+        if (!state?.track_window?.current_track) return;
+
+        const t = state.track_window.current_track;
+        const current = {
+          id: t.id,
+          name: t.name,
+          artist: (t.artists || []).map(a => a.name).join(', '),
+          albumImage: t.album?.images?.[0]?.url || 'img/default-avatar.svg',
+          isPlaying: !state.paused,
+          position: state.position,
+          duration: state.duration
+        };
+        post('core:state', { current });
+      });
+
+      await player.connect();
+      isConnecting = false;
+    }
+
+    // Comandos vindos das páginas
+    chan.onmessage = async (ev) => {
+      const { type, payload } = ev.data || {};
+      if (!type) return;
+
+      if (type === 'core:hello') {
+        // página conectou → responde status
+        token = getToken();
+        post('core:hello:ack', { hasToken: !!token, device_id: readyDeviceId });
+        if (!player) await ensurePlayer();
+        if (lastState?.track_window?.current_track) {
+          const s = lastState;
+          const t = s.track_window.current_track;
+          post('core:state', {
+            current: {
+              id: t.id,
+              name: t.name,
+              artist: (t.artists || []).map(a => a.name).join(', '),
+              albumImage: t.album?.images?.[0]?.url || 'img/default-avatar.svg',
+              isPlaying: !s.paused,
+              position: s.position,
+              duration: s.duration
+            }
+          });
+        }
+        return;
+      }
+
+      if (!player) {
+        await ensurePlayer();
+        if (!player) return;
+      }
+
+      try {
+        switch (type) {
+          case 'ctrl:playpause':
+            await player.togglePlay();
+            break;
+          case 'ctrl:next':
+            await player.nextTrack();
+            break;
+          case 'ctrl:prev':
+            // comportamento de "voltar pro início" ou voltar faixa anterior é do lado da página (já calculado)
+            await player.previousTrack();
+            break;
+          case 'ctrl:seek':
+            if (typeof payload.ms === 'number') await player.seek(payload.ms);
+            break;
+          case 'ctrl:volume':
+            if (typeof payload.vol === 'number') await player.setVolume(payload.vol);
+            break;
+          case 'ctrl:transfer':
+            if (readyDeviceId) {
+              await fetch('https://api.spotify.com/v1/me/player', {
+                method: 'PUT',
+                headers: {
+                  Authorization: `Bearer ${getToken()}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ device_ids: [readyDeviceId], play: payload?.play ?? false })
+              });
+            }
+            break;
+          case 'ctrl:play':
+            // tocar contexto/uri via Web API
+            token = getToken();
+            if (!token) return;
+            await fetch('https://api.spotify.com/v1/me/player/play', {
+              method: 'PUT',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload.body || {})
+            });
+            break;
+          default:
+            break;
+        }
+      } catch (e) {
+        post('core:error', { message: e?.message || 'Erro' });
+      }
+    };
+
+    // Caso token chegue depois (ex: login recém-feito)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'spotify_token' && e.newValue) {
+        token = e.newValue;
+        ensurePlayer();
+      }
+    });
+
+    // Botão de reabrir (uso eventual)
+    document.getElementById('reopen')?.addEventListener('click', () => {
+      window.focus();
+    });
+  </script>
+</body>
+
+</html>
