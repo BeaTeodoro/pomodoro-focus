@@ -50,6 +50,65 @@
     align-items: center;
     gap: 1.5rem;
 
+    /* ---- USER INFO AREA (LOGIN FEITO) ---- */
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+
+      &.visible {
+        display: flex;
+      }
+
+      &:hover {
+        background: var(--bg-card-hover, rgba(0, 0, 0, 0.05));
+        transform: translateY(-1px);
+      }
+
+      img {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      span {
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: var(--text);
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    /* Botão Entrar (quando NÃO logado) */
+    #login-btn {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.5rem 1.2rem;
+      border-radius: 25px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      &.hidden {
+        display: none !important;
+      }
+    }
+
     .theme-switch {
       display: flex;
       align-items: center;
@@ -98,23 +157,6 @@
         }
       }
     }
-
-    .btn-login {
-      background: var(--primary);
-      color: #fff;
-      padding: 0.5rem 1.2rem;
-      border-radius: 25px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-      }
-    }
   }
 }
 
@@ -148,7 +190,7 @@
   }
 }
 
-/* Tema escuro */
+/* Tema Escuro */
 [data-theme="dark"] {
   .header {
     background: #1f1a1a;
@@ -185,13 +227,19 @@
       width: 100%;
       padding: 1rem;
       border-top: 1px solid #dcdcd6;
+      gap: 1rem;
 
       &.active {
         display: flex;
         animation: fadeIn 0.3s ease;
       }
 
-      .btn-login {
+      .user-info {
+        width: 100%;
+        justify-content: center;
+      }
+
+      #login-btn {
         width: 100%;
         justify-content: center;
       }

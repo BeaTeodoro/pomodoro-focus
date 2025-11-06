@@ -1,12 +1,9 @@
 import { supabase } from "./supabase.js";
 
-// Detecta ambiente (local ou produção)
-const isLocalhost = ["127.0.0.1", "localhost"].some(host => window.location.hostname.includes(host));
-const REDIRECT_URL = isLocalhost
-  ? "http://127.0.0.1:5500/index.html"
-  : "https://pomodoro-focus-bt.vercel.app/index.html";
+// Redireciono automaticamente p/ o domínio atual
+const REDIRECT_URL = `${window.location.origin}/index.html`;
 
-// Login com Google
+// Login com Google (OAuth)
 export async function loginWithGoogle() {
   try {
     localStorage.setItem("login_method", "google");
@@ -18,17 +15,17 @@ export async function loginWithGoogle() {
       },
     });
     if (error) throw error;
-    console.log("✅ Login com Google iniciado...");
+    console.log("✅ Login com Google iniciado…");
   } catch (err) {
-    console.error("❌ Erro no login com Google:", err.message || err);
-    alert("Erro ao tentar login com Google: " + (err.message || err));
+    console.error("❌ Erro no login com Google:", err?.message || err);
+    alert("Erro ao tentar login com Google: " + (err?.message || err));
   }
 }
 
 // Logout
 export async function logout() {
   const { error } = await supabase.auth.signOut();
-  if (error) console.error("Erro ao sair:", error.message || error);
+  if (error) console.error("Erro ao sair:", error?.message || error);
   else window.location.href = "login.html";
 }
 
@@ -36,13 +33,9 @@ export async function logout() {
 export async function getSession() {
   try {
     const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error("Erro ao buscar sessão:", error.message || error);
-      return null;
-    }
+    if (error) return null;
     return data?.session || null;
-  } catch (err) {
-    console.error("Erro ao buscar sessão (catch):", err);
+  } catch {
     return null;
   }
 }
@@ -51,49 +44,37 @@ export async function getSession() {
 export async function getCurrentUser() {
   try {
     const { data: { user } = {}, error } = await supabase.auth.getUser();
-    if (error) {
-      console.error("Erro ao obter usuário:", error.message || error);
-      return null;
-    }
+    if (error) return null;
     return user || null;
-  } catch (err) {
-    console.error("Erro ao obter usuário (catch):", err);
+  } catch {
     return null;
   }
 }
 
-// Exige login em páginas protegidas
-export async function requireAuth() {
-  const session = await getSession();
-  if (!session) {
-    alert("⚠️ Faça login para acessar esta página.");
-    window.location.href = "login.html";
-  }
-  return session;
-}
-
-// Listener de autenticação
+// Listener de autenticação (cria perfil no 1º login Google e vai para index)
 supabase.auth.onAuthStateChange(async (event, session) => {
-  console.log("🔄 Evento de autenticação:", event);
+  console.log("🔄 Auth event:", event);
 
   if (event === "SIGNED_IN" && session?.user) {
     const { user } = session;
+
     try {
+      // já existe perfil?
       const { data: existing, error: selectError } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (selectError) {
-        console.error("Erro ao checar perfil:", selectError);
-      }
+      if (selectError) console.error("Erro ao checar perfil:", selectError);
 
       if (!existing) {
-        // cria perfil básico
+        // cria perfil básico no primeiro login
         const { error: insertError } = await supabase.from("profiles").insert({
           id: user.id,
           full_name: user.user_metadata?.full_name || user.email,
+          location: null,
+          age: null,
           photo_url: user.user_metadata?.avatar_url || null,
           theme: "auto",
           created_at: new Date(),
@@ -102,20 +83,20 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
         if (insertError) console.error("Erro ao criar perfil:", insertError);
         else console.log("🆕 Perfil criado no Supabase");
-
-        // redireciona para página de completar perfil
-        window.location.href = "cadastro.html";
-        return;
       }
     } catch (err) {
-      console.error("Erro ao criar/perfilar usuário:", err);
+      console.error("Erro ao criar/checar perfil:", err);
     }
 
-    // se já existir, vai para index
-    window.location.href = "index.html";
+    // Vai para index sempre que logar
+    if (!location.pathname.endsWith("/index.html")) {
+      window.location.href = "index.html";
+    }
   }
 
   if (event === "SIGNED_OUT") {
-    window.location.href = "login.html";
+    if (!location.pathname.endsWith("/login.html")) {
+      window.location.href = "login.html";
+    }
   }
 });

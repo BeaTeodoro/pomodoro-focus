@@ -43,9 +43,15 @@
         <i class="ph ph-moon"></i>
       </div>
 
-      <a href="login.html" class="btn-login">
+      <div id="user-info" class="user-info hidden">
+        <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar do usuário" />
+        <span id="user-name"></span>
+      </div>
+
+      <a href="login.html" id="login-btn" class="btn-login">
         <i class="ph ph-sign-in"></i> Entrar
       </a>
+
     </div>
   </header>
 
@@ -140,6 +146,7 @@
   <script src="js/header.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="js/stats.js"></script>
+  <script type="module" src="js/userHeader.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
   <iframe id="player-core" src="player-core.html"

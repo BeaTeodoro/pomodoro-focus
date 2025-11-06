@@ -138,6 +138,72 @@ button {
       -ms-flex-align: center;
           align-items: center;
   gap: 1.5rem;
+  /* ---- USER INFO AREA (LOGIN FEITO) ---- */
+  /* Botão Entrar (quando NÃO logado) */
+}
+.header .header-actions .user-info {
+  display: none;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  cursor: pointer;
+  -webkit-transition: background 0.3s ease, -webkit-transform 0.3s ease;
+  transition: background 0.3s ease, -webkit-transform 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease, -webkit-transform 0.3s ease;
+}
+.header .header-actions .user-info.visible {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.header .header-actions .user-info:hover {
+  background: var(--bg-card-hover, rgba(0, 0, 0, 0.05));
+  -webkit-transform: translateY(-1px);
+          transform: translateY(-1px);
+}
+.header .header-actions .user-info img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.header .header-actions .user-info span {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.header .header-actions #login-btn {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 0.4rem;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+.header .header-actions #login-btn:hover {
+  background: var(--primary-dark);
+  -webkit-transform: translateY(-2px);
+          transform: translateY(-2px);
+}
+.header .header-actions #login-btn.hidden {
+  display: none !important;
 }
 .header .header-actions .theme-switch {
   display: -webkit-box;
@@ -191,27 +257,6 @@ button {
   -webkit-transform: translateX(22px);
           transform: translateX(22px);
 }
-.header .header-actions .btn-login {
-  background: var(--primary);
-  color: #fff;
-  padding: 0.5rem 1.2rem;
-  border-radius: 25px;
-  font-weight: 600;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  gap: 0.4rem;
-  -webkit-transition: all 0.3s ease;
-  transition: all 0.3s ease;
-}
-.header .header-actions .btn-login:hover {
-  background: var(--primary-dark);
-  -webkit-transform: translateY(-2px);
-          transform: translateY(-2px);
-}
 
 /* Subnav */
 .subnav {
@@ -248,7 +293,7 @@ button {
   color: #fff;
 }
 
-/* Tema escuro */
+/* Tema Escuro */
 [data-theme=dark] .header {
   background: #1f1a1a;
   border-color: #2d2d2d;
@@ -285,6 +330,7 @@ button {
     width: 100%;
     padding: 1rem;
     border-top: 1px solid #dcdcd6;
+    gap: 1rem;
   }
   .header .header-actions.active {
     display: -webkit-box;
@@ -293,7 +339,13 @@ button {
     -webkit-animation: fadeIn 0.3s ease;
             animation: fadeIn 0.3s ease;
   }
-  .header .header-actions .btn-login {
+  .header .header-actions .user-info {
+    width: 100%;
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+  }
+  .header .header-actions #login-btn {
     width: 100%;
     -webkit-box-pack: center;
         -ms-flex-pack: center;
@@ -1589,7 +1641,13 @@ button {
   border-color: #d34545;
   color: #fff !important;
 }
-
+.musica-page .spotify-player {
+  /* Linha do tempo + tempos */
+  /* Controles */
+  /* Like preenchido com micro animação */
+  /* Repetir / Aleatório destacados */
+  /* Volume horizontal */
+}
 .musica-page .spotify-player .player-grid {
   display: grid;
   grid-template-columns: 160px 1fr;

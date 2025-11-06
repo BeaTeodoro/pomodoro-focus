@@ -44,9 +44,15 @@
         <i class="ph ph-moon"></i>
       </div>
 
-      <a href="login.html" class="btn-login">
+      <div id="user-info" class="user-info hidden">
+        <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar do usuário" />
+        <span id="user-name"></span>
+      </div>
+
+      <a href="login.html" id="login-btn" class="btn-login">
         <i class="ph ph-sign-in"></i> Entrar
       </a>
+
     </div>
   </header>
 
@@ -173,6 +179,7 @@
   <script src="js/theme.js"></script>
   <script src="js/header.js"></script>
   <script src="js/timer.js"></script>
+  <script type="module" src="js/userHeader.js"></script>
   <script type="module" src="js/spotify.js"></script>
   <script type="module" src="js/miniPlayer.js"></script>
   <iframe id="player-core" src="player-core.html"
