@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meu Perfil | Pomodoro Focus</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+
+<body>
+  <!-- Header padrão -->
+  <header class="header">
+    <div class="logo">
+      <img src="img/favicon.png" alt="Logo Pomodoro" />
+      <h1>Pomodoro Focus</h1>
+    </div>
+
+    <div class="header-actions">
+      <div class="theme-switch">
+        <i class="ph ph-sun"></i>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" />
+          <span class="slider"></span>
+        </label>
+        <i class="ph ph-moon"></i>
+      </div>
+
+      <div id="user-info" class="user-info hidden">
+        <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar" />
+        <span id="user-name"></span>
+      </div>
+
+      <div id="user-menu" class="user-menu hidden">
+        <button id="logout-btn"><i class="ph ph-sign-out"></i> Sair</button>
+      </div>
+
+      <a href="login.html" id="login-btn" class="btn-login">
+        <i class="ph ph-sign-in"></i> Entrar
+      </a>
+    </div>
+  </header>
+
+  <main class="container section-card" style="max-width: 500px; margin-top: 4rem;">
+    <h2><i class="ph ph-user-circle"></i> Meu Perfil</h2>
+
+    <form id="profile-form">
+      <label>Nome:</label>
+      <input type="text" id="full_name" />
+
+      <label>Localização:</label>
+      <input type="text" id="location" />
+
+      <label>Idade:</label>
+      <input type="number" id="age" min="1" />
+
+      <label>Foto de Perfil:</label>
+      <input type="file" id="avatar-input" accept="image/*" />
+
+      <button type="submit" class="btn-primary">Salvar Alterações</button>
+    </form>
+
+    <button id="delete-account-btn" class="btn-danger" style="margin-top: 1.5rem;">
+      <i class="ph ph-warning"></i> Excluir conta
+    </button>
+  </main>
+
+  <footer class="footer"></footer>
+
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="./js/theme.js"></script>
+  <script type="module" src="./js/header.js"></script>
+  <script type="module" src="./js/profile.js"></script>
+</body>
+
+</html>

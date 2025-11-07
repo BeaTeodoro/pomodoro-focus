@@ -42,17 +42,20 @@
         </label>
         <i class="ph ph-moon"></i>
       </div>
-
+      <!--Sessão usuário/perfil-->
       <div id="user-info" class="user-info hidden">
         <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar do usuário" />
         <span id="user-name"></span>
       </div>
 
+      <div id="user-menu" class="user-menu hidden">
+        <a href="perfil.html"><i class="ph ph-user"></i> Meu perfil</a>
+        <button id="logout-btn"><i class="ph ph-sign-out"></i> Sair</button>
+      </div>
+
       <a href="login.html" id="login-btn" class="btn-login">
         <i class="ph ph-sign-in"></i> Entrar
       </a>
-
-    </div>
   </header>
 
   <!-- Navegação -->
@@ -142,13 +145,12 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="js/theme.js"></script>
-  <script src="js/header.js"></script>
+  <script src="./js/theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="js/stats.js"></script>
-  <script type="module" src="js/userHeader.js"></script>
-  <script type="module" src="js/spotify.js"></script>
-  <script type="module" src="js/miniPlayer.js"></script>
+  <script src="./js/stats.js"></script>
+  <script type="module" src="js/header.js"></script>
+  <script type="module" src="./js/spotify.js"></script>
+  <script type="module" src="./js/miniPlayer.js"></script>
   <iframe id="player-core" src="player-core.html"
     style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
 

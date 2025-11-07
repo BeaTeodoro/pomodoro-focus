@@ -31,7 +31,6 @@
       <h1>Pomodoro Focus</h1>
     </div>
 
-    <!-- ✅ Botão do menu mobile adicionado -->
     <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menu">
       <i class="ph ph-list"></i>
     </button>
@@ -45,7 +44,7 @@
         </label>
         <i class="ph ph-moon"></i>
       </div>
-      <a href="login.html" class="btn-login"><i class="ph ph-sign-in"></i> Entrar</a>
+      <a href="login.html" id="login-btn" class="btn-login"><i class="ph ph-sign-in"></i> Entrar</a>
     </div>
   </header>
 
@@ -68,6 +67,7 @@
         <h2><i class="ph ph-user-circle"></i> Bem-vindo de volta</h2>
         <p>Entre com e-mail ou Google</p>
 
+        <!-- ✅ REMOVIDO onsubmit="return false" -->
         <form id="login-form">
           <div class="form-group">
             <label for="email"><i class="ph ph-envelope"></i> E-mail</label>
@@ -79,7 +79,8 @@
             <input type="password" id="password" placeholder="********" required />
           </div>
 
-          <button type="submit" class="btn-login">Entrar</button>
+          <!-- ✅ O botão permanece submit -->
+          <button type="submit" id="email-login-btn">Entrar</button>
         </form>
 
         <p class="or-separator">— ou —</p>
@@ -93,7 +94,7 @@
         </p>
       </div>
 
-      <!-- Cadastro embutido (opcional) -->
+      <!-- Cadastro -->
       <div class="signup-box" id="signup-box">
         <h2><i class="ph ph-user-plus"></i> Criar conta</h2>
 
@@ -139,51 +140,12 @@
     </section>
   </main>
 
-  <!-- Footer com mini-player -->
+  <!-- Footer -->
   <footer class="footer" aria-label="Rodapé">
     <div class="footer-content container">
-      <div class="mini-player-footer" aria-label="Mini player do Spotify">
-        <i class="ph ph-spotify-logo spotify-icon" aria-hidden="true"></i>
-
-        <div class="player-buttons" role="group" aria-label="Controles do mini player">
-          <button id="mini-prev" title="Anterior" type="button"><i class="ph ph-skip-back"></i></button>
-          <button id="mini-play" class="play-btn" title="Tocar/Pausar" type="button"><i class="ph ph-play"></i></button>
-          <button id="mini-next" title="Próxima" type="button"><i class="ph ph-skip-forward"></i></button>
-
-          <!-- volume popover que abre pra cima -->
-          <div class="mini-volume">
-            <button id="mini-vol-btn" class="vol-btn" title="Volume" type="button"><i
-                class="ph ph-speaker-high"></i></button>
-            <div class="mini-volume-pop" aria-hidden="true">
-              <input id="mini-volume-range" type="range" min="0" max="100" value="70" orient="vertical"
-                aria-label="Volume do mini player" />
-            </div>
-          </div>
-        </div>
-
-        <div class="mini-track-info">
-          <p class="track-title">Título da música</p>
-          <span class="track-artist">Artista</span>
-          <div class="mini-progress-bar" aria-label="Progresso" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-            aria-valuenow="0">
-            <div class="progress-fill"></div>
-          </div>
-        </div>
-      </div>
-
       <p class="footer-center">
         © 2025 <strong>Pomodoro Focus</strong> — Desenvolvido por <strong>Beatriz Teodoro</strong> 🍅
       </p>
-
-      <div class="social-links" aria-label="Redes sociais">
-        <a href="https://www.linkedin.com/in/beatrizateodoro" target="_blank" aria-label="LinkedIn"
-          rel="noopener noreferrer">
-          <i class="ph ph-linkedin-logo"></i>
-        </a>
-        <a href="https://github.com/BeaTeodoro" target="_blank" aria-label="GitHub" rel="noopener noreferrer">
-          <i class="ph ph-github-logo"></i>
-        </a>
-      </div>
     </div>
   </footer>
 
@@ -193,27 +155,7 @@
     import { loginWithGoogle } from "./js/auth.js";
     import { signUpWithEmailAndPhoto } from "./js/emailAuth.js";
 
-    const loginBox = document.getElementById("login-box");
-    const signupBox = document.getElementById("signup-box");
-
-    // Estado inicial
-    window.addEventListener("DOMContentLoaded", () => {
-      signupBox.classList.remove("active");
-      loginBox.classList.remove("hidden");
-    });
-
-    // Alternar login/cadastro
-    document.getElementById("open-signup").addEventListener("click", () => {
-      loginBox.classList.add("hidden");
-      signupBox.classList.add("active");
-    });
-
-    document.getElementById("back-to-login").addEventListener("click", () => {
-      signupBox.classList.remove("active");
-      loginBox.classList.remove("hidden");
-    });
-
-    // Login por e-mail
+    // Login por submit ✅
     document.getElementById("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("email").value;
@@ -221,10 +163,8 @@
       await loginWithEmail(email, password);
     });
 
-    // Login com Google
     document.getElementById("google-login").addEventListener("click", loginWithGoogle);
 
-    // Cadastro com upload
     document.getElementById("signup-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const fullName = document.getElementById("fullName").value;
@@ -233,27 +173,17 @@
       const email = document.getElementById("signupEmail").value;
       const password = document.getElementById("signupPassword").value;
       const photoFile = document.getElementById("photoFile").files[0];
-
       await signUpWithEmailAndPhoto(email, password, fullName, location, age, photoFile);
     });
 
-    // Pré-visualização da foto
     document.getElementById("photoFile").addEventListener("change", (e) => {
       const file = e.target.files[0];
-      if (file) {
-        document.getElementById("photoPreview").src = URL.createObjectURL(file);
-      }
+      if (file) document.getElementById("photoPreview").src = URL.createObjectURL(file);
     });
   </script>
 
-  <!-- Scripts globais -->
-  <script src="js/theme.js"></script>
-  <script src="js/header.js"></script>
-  <script type="module" src="js/userHeader.js"></script>
-  <script type="module" src="js/spotify.js"></script>
-  <script type="module" src="js/miniPlayer.js"></script>
-  <iframe id="player-core" src="player-core.html"
-    style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
+  <script src="./js/theme.js"></script>
+  <script type="module" src="./js/header.js"></script>
 
 </body>
 

@@ -35,6 +35,8 @@
     </button>
 
     <div class="header-actions">
+
+      <!-- Tema -->
       <div class="theme-switch">
         <i class="ph ph-sun"></i>
         <label class="switch">
@@ -44,11 +46,21 @@
         <i class="ph ph-moon"></i>
       </div>
 
+      <!-- ✅ VISÍVEL APENAS LOGADO -->
       <div id="user-info" class="user-info hidden">
-        <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar do usuário" />
+        <img id="user-avatar" src="img/default-avatar.svg" alt="Avatar" />
         <span id="user-name"></span>
       </div>
 
+      <!-- ✅ MENU DO PERFIL -->
+      <div id="user-menu" class="user-menu hidden">
+        <a id="go-profile" href="perfil.html">
+          <i class="ph ph-user"></i> Meu Perfil
+        </a>
+        <button id="logout-btn"><i class="ph ph-sign-out"></i> Sair</button>
+      </div>
+
+      <!-- ✅ VISÍVEL APENAS DESLOGADO -->
       <a href="login.html" id="login-btn" class="btn-login">
         <i class="ph ph-sign-in"></i> Entrar
       </a>
@@ -231,11 +243,9 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="js/theme.js"></script>
-  <script src="js/header.js"></script>
-  <script type="module" src="js/userHeader.js"></script>
-  <script type="module" src="js/spotify.js"></script>
-  <script type="module" src="js/miniPlayer.js"></script>
+  <script src="./js/theme.js"></script>
+  <script type="module" src="./js/spotify.js"></script>
+  <script type="module" src="./js/miniPlayer.js"></script>
 
   <!-- Sessão ativa → botão perfil -->
   <script type="module">
@@ -253,7 +263,7 @@
   </script>
   <iframe id="player-core" src="player-core.html"
     style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
-
+  <script type="module" src="js/header.js"></script>
 </body>
 
 </html>

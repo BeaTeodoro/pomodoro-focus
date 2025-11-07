@@ -32,7 +32,7 @@
     }
   }
 
-  /* Botão mobile */
+  /* Botão Mobile */
   .menu-toggle {
     display: none;
     background: none;
@@ -41,7 +41,6 @@
     font-size: 1.8rem;
     cursor: pointer;
     transition: color 0.3s;
-
     &:hover { color: var(--primary); }
   }
 
@@ -50,9 +49,9 @@
     align-items: center;
     gap: 1.5rem;
 
-    /* ---- USER INFO AREA (LOGIN FEITO) ---- */
+    /* ---- ÁREA DO USUÁRIO LOGADO ---- */
     .user-info {
-      display: none;
+      display: none; /* padrão = oculto */
       align-items: center;
       gap: 0.6rem;
       padding: 0.4rem 0.8rem;
@@ -60,12 +59,16 @@
       cursor: pointer;
       transition: background 0.3s ease, transform 0.3s ease;
 
-      &.visible {
-        display: flex;
+      &.hidden {
+        display: none !important;
+      }
+
+      &.show {
+        display: flex !important;
       }
 
       &:hover {
-        background: var(--bg-card-hover, rgba(0, 0, 0, 0.05));
+        background: var(--bg-card-hover, rgba(0,0,0,0.05));
         transform: translateY(-1px);
       }
 
@@ -87,7 +90,47 @@
       }
     }
 
-    /* Botão Entrar (quando NÃO logado) */
+    /* ---- MENU SUSPENSO ---- */
+    .user-menu {
+      position: absolute;
+      top: 60px;
+      right: 2rem;
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 0.6rem 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      min-width: 150px;
+      z-index: 200;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+
+      &.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+      }
+
+      &.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      button {
+        background: none;
+        color: var(--text);
+        border: none;
+        text-align: left;
+        padding: 0.6rem 1rem;
+        width: 100%;
+        cursor: pointer;
+        font-size: 0.95rem;
+        &:hover { background: rgba(255,255,255,0.08); }
+      }
+    }
+
+    /* Botão Entrar */
     #login-btn {
       background: var(--primary);
       color: #fff;
@@ -109,26 +152,20 @@
       }
     }
 
+    /* Switch de tema */
     .theme-switch {
       display: flex;
       align-items: center;
       gap: 0.6rem;
 
-      i {
-        font-size: 1.3rem;
-        color: var(--text2);
-      }
+      i { font-size: 1.3rem; color: var(--text2); }
 
       .switch {
         position: relative;
         width: 46px;
         height: 24px;
 
-        input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
+        input { opacity: 0; width: 0; height: 0; }
 
         .slider {
           position: absolute;
@@ -152,7 +189,6 @@
 
         input:checked + .slider {
           background: var(--primary);
-
           &::before { transform: translateX(22px); }
         }
       }
@@ -276,4 +312,9 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+}
+
+/* Utilitário global */
+.hidden {
+  display: none !important;
 }

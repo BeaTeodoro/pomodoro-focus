@@ -93,7 +93,7 @@ button {
   z-index: 100;
   -webkit-transition: background 0.3s ease-in-out, border-color 0.3s ease-in-out;
   transition: background 0.3s ease-in-out, border-color 0.3s ease-in-out;
-  /* Botão mobile */
+  /* Botão Mobile */
 }
 .header .logo {
   display: -webkit-box;
@@ -138,11 +138,13 @@ button {
       -ms-flex-align: center;
           align-items: center;
   gap: 1.5rem;
-  /* ---- USER INFO AREA (LOGIN FEITO) ---- */
-  /* Botão Entrar (quando NÃO logado) */
+  /* ---- ÁREA DO USUÁRIO LOGADO ---- */
+  /* ---- MENU SUSPENSO ---- */
+  /* Botão Entrar */
+  /* Switch de tema */
 }
 .header .header-actions .user-info {
-  display: none;
+  display: none; /* padrão = oculto */
   -webkit-box-align: center;
       -ms-flex-align: center;
           align-items: center;
@@ -155,10 +157,13 @@ button {
   transition: background 0.3s ease, transform 0.3s ease;
   transition: background 0.3s ease, transform 0.3s ease, -webkit-transform 0.3s ease;
 }
-.header .header-actions .user-info.visible {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+.header .header-actions .user-info.hidden {
+  display: none !important;
+}
+.header .header-actions .user-info.show {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
 }
 .header .header-actions .user-info:hover {
   background: var(--bg-card-hover, rgba(0, 0, 0, 0.05));
@@ -180,6 +185,54 @@ button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.header .header-actions .user-menu {
+  position: absolute;
+  top: 60px;
+  right: 2rem;
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 0.6rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  min-width: 150px;
+  z-index: 200;
+  -webkit-transition: opacity 0.25s ease, -webkit-transform 0.25s ease;
+  transition: opacity 0.25s ease, -webkit-transform 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease, -webkit-transform 0.25s ease;
+}
+.header .header-actions .user-menu.hidden {
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transform: translateY(-6px);
+          transform: translateY(-6px);
+}
+.header .header-actions .user-menu.show {
+  opacity: 1;
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+.header .header-actions .user-menu button {
+  background: none;
+  color: var(--text);
+  border: none;
+  text-align: left;
+  padding: 0.6rem 1rem;
+  width: 100%;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.header .header-actions .user-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 .header .header-actions #login-btn {
   background: var(--primary);
@@ -423,6 +476,11 @@ button {
     }
   }
 }
+/* Utilitário global */
+.hidden {
+  display: none !important;
+}
+
 .footer {
   background-color: var(--bg-card);
   border-top: 1px solid var(--accent-soft);
