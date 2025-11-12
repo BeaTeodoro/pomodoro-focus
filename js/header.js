@@ -26,55 +26,40 @@ if (menuToggle && headerActions && mobileMenu) {
 -------------------------------------------- */
 async function loadUser() {
   const userInfo = document.getElementById("user-info");
+  const userMenu = document.getElementById("user-menu");
   const loginButton = document.getElementById("login-btn");
   const userName = document.getElementById("user-name");
   const userAvatar = document.getElementById("user-avatar");
   const logoutButton = document.getElementById("logout-btn");
 
-  // segurança se o header desta página não tiver esses elementos
   if (!userInfo || !loginButton) return;
 
   const { data: { session } } = await supabase.auth.getSession();
 
-  // Não logado → mostra "Entrar", esconde área do usuário
+  // Não logado
   if (!session) {
-    userInfo.classList.remove("visible");
     userInfo.classList.add("hidden");
     loginButton.classList.remove("hidden");
     return;
   }
 
-  // Logado → carrega perfil
+  // Logado
   const { user } = session;
-  const { data: profile, error } = await supabase
+
+  // Carrega perfil no Supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("display_name, photo_url")
     .eq("id", user.id)
     .single();
 
-  if (!error && profile) {
-    if (userName) userName.textContent = profile.display_name || "Usuário";
-    if (userAvatar) userAvatar.src = profile.photo_url || "img/default-avatar.svg";
-  }
+  // Aplica dados no header
+  if (userName) userName.textContent = profile?.display_name || user.email;
+  if (userAvatar) userAvatar.src = profile?.photo_url || "img/default-avatar.svg";
 
-  // Mostra área do usuário e esconde o botão "Entrar"
-  loginButton.classList.add("hidden");
+  // Mostra área do usuário, esconde o botão entrar
   userInfo.classList.remove("hidden");
-  userInfo.classList.add("visible");
-
-  // (Opcional) abrir/fechar menu de usuário ao clicar na área
-  const userMenu = document.getElementById("user-menu");
-  if (userMenu) {
-    userInfo.addEventListener("click", () => {
-      userMenu.classList.toggle("hidden");
-    });
-    // clicar fora fecha
-    document.addEventListener("click", (e) => {
-      if (!userInfo.contains(e.target) && !userMenu.contains(e.target)) {
-        userMenu.classList.add("hidden");
-      }
-    });
-  }
+  loginButton.classList.add("hidden");
 
   // Logout
   if (logoutButton) {
@@ -83,13 +68,25 @@ async function loadUser() {
       window.location.reload();
     };
   }
+
+  // Toggle menu ao clicar no avatar ou nome
+  if (userInfo && userMenu) {
+    userInfo.onclick = () => {
+      userMenu.classList.toggle("hidden");
+    };
+  }
 }
 
 /* -------------------------------------------
    INICIALIZAÇÃO
 -------------------------------------------- */
 document.addEventListener("DOMContentLoaded", loadUser);
+
+// Atualiza o header quando a sessão mudar
 supabase.auth.onAuthStateChange(() => {
   console.log("🔄 Sessão mudou — atualizando header...");
   loadUser();
 });
+
+// Atualiza o header quando o perfil for salvo (perfil.js dispara isso)
+document.addEventListener("profile-updated", loadUser);

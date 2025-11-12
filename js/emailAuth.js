@@ -14,7 +14,7 @@ export async function loginWithEmail(email, password) {
       const msg = (error.message || "").toLowerCase();
 
       if (msg.includes("email not confirmed") || msg.includes("confirm")) {
-        alert("⚠️ Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.");
+        alert("⚠️ Confirme seu e-mail antes de entrar.");
       } else if (msg.includes("invalid login credentials")) {
         alert("❌ E-mail ou senha inválidos.");
       } else {
@@ -23,8 +23,11 @@ export async function loginWithEmail(email, password) {
       return null;
     }
 
-    // ✅ Sucesso → Vai para home
-    window.location.replace("index.html");
+    // ✅ Aguarda Supabase salvar a sessão antes de trocar a página
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 200);
+
     return data;
 
   } catch (err) {
@@ -33,6 +36,7 @@ export async function loginWithEmail(email, password) {
     return null;
   }
 }
+
 
 // -----------------------------
 // CADASTRO COM FOTO (OPCIONAL)

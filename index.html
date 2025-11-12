@@ -247,20 +247,6 @@
   <script type="module" src="./js/spotify.js"></script>
   <script type="module" src="./js/miniPlayer.js"></script>
 
-  <!-- Sessão ativa → botão perfil -->
-  <script type="module">
-    import { getSession } from "./js/auth.js";
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      const session = await getSession();
-      const loginButton = document.querySelector(".btn-login");
-
-      if (session && loginButton) {
-        loginButton.innerHTML = `<i class="ph ph-user"></i> Perfil`;
-        loginButton.href = "cadastro.html";
-      }
-    });
-  </script>
   <iframe id="player-core" src="player-core.html"
     style="width:0;height:0;border:0;position:absolute;opacity:0;"></iframe>
   <script type="module" src="js/header.js"></script>

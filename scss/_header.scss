@@ -51,7 +51,7 @@
 
     /* ---- ÁREA DO USUÁRIO LOGADO ---- */
     .user-info {
-      display: none; /* padrão = oculto */
+      display: flex; /* ← Mantém visível quando .hidden é removido */
       align-items: center;
       gap: 0.6rem;
       padding: 0.4rem 0.8rem;
@@ -59,13 +59,7 @@
       cursor: pointer;
       transition: background 0.3s ease, transform 0.3s ease;
 
-      &.hidden {
-        display: none !important;
-      }
-
-      &.show {
-        display: flex !important;
-      }
+      &.hidden { display: none !important; }
 
       &:hover {
         background: var(--bg-card-hover, rgba(0,0,0,0.05));
@@ -80,13 +74,17 @@
       }
 
       span {
-        font-weight: 500;
-        font-size: 0.95rem;
-        color: var(--text);
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--primary);
         max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        transition: color .3s ease;
+      }
+      .user-info:hover span {
+        color: var(--primary-dark);
       }
     }
 
@@ -106,27 +104,12 @@
       z-index: 200;
       transition: opacity 0.25s ease, transform 0.25s ease;
 
+      /* ← CORREÇÃO IMPORTANTE */
       &.hidden {
+        display: none !important;
         opacity: 0;
         pointer-events: none;
         transform: translateY(-6px);
-      }
-
-      &.show {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      button {
-        background: none;
-        color: var(--text);
-        border: none;
-        text-align: left;
-        padding: 0.6rem 1rem;
-        width: 100%;
-        cursor: pointer;
-        font-size: 0.95rem;
-        &:hover { background: rgba(255,255,255,0.08); }
       }
     }
 
@@ -141,15 +124,8 @@
       align-items: center;
       gap: 0.4rem;
       transition: all 0.3s ease;
-
-      &:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-      }
-
-      &.hidden {
-        display: none !important;
-      }
+      &:hover { background: var(--primary-dark); transform: translateY(-2px); }
+      &.hidden { display: none !important; }
     }
 
     /* Switch de tema */
@@ -157,14 +133,12 @@
       display: flex;
       align-items: center;
       gap: 0.6rem;
-
       i { font-size: 1.3rem; color: var(--text2); }
 
       .switch {
         position: relative;
         width: 46px;
         height: 24px;
-
         input { opacity: 0; width: 0; height: 0; }
 
         .slider {
@@ -173,7 +147,6 @@
           background: #ccc;
           border-radius: 30px;
           transition: background 0.3s;
-
           &::before {
             content: "";
             position: absolute;
@@ -228,22 +201,13 @@
 
 /* Tema Escuro */
 [data-theme="dark"] {
-  .header {
-    background: #1f1a1a;
-    border-color: #2d2d2d;
-  }
-
+  .header { background: #1f1a1a; border-color: #2d2d2d; }
   .subnav {
     background: #262121;
     border-color: #332d2d;
-
     .tab {
       color: #f0f0f0;
-
-      &.active {
-        background: var(--primary);
-        color: #1f1a1a;
-      }
+      &.active { background: var(--primary); color: #1f1a1a; }
     }
   }
 }
@@ -256,61 +220,16 @@
 
     .menu-toggle { display: block; }
 
-    .header-actions {
-      display: none;
+    .header-actions.active {
+      display: flex;
       flex-direction: column;
       background: var(--bg-card);
       width: 100%;
       padding: 1rem;
       border-top: 1px solid #dcdcd6;
       gap: 1rem;
-
-      &.active {
-        display: flex;
-        animation: fadeIn 0.3s ease;
-      }
-
-      .user-info {
-        width: 100%;
-        justify-content: center;
-      }
-
-      #login-btn {
-        width: 100%;
-        justify-content: center;
-      }
+      animation: fadeIn 0.3s ease;
     }
-  }
-
-  .subnav {
-    display: none;
-
-    &.active {
-      display: block;
-      animation: slideDown 0.3s ease;
-    }
-
-    .tabs {
-      flex-direction: column;
-      align-items: center;
-
-      .tab {
-        width: 90%;
-        text-align: center;
-        padding: 0.7rem;
-        border-radius: 8px;
-      }
-    }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 }
 

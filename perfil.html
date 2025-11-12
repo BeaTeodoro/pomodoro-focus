@@ -13,12 +13,17 @@
 <body>
   <!-- Header padrão -->
   <header class="header">
-    <div class="logo">
+    <div class="logo" onclick="window.location.href='index.html'">
       <img src="img/favicon.png" alt="Logo Pomodoro" />
       <h1>Pomodoro Focus</h1>
     </div>
 
-    <div class="header-actions">
+    <button class="menu-toggle" id="menu-toggle">
+      <i class="ph ph-list"></i>
+    </button>
+
+    <div class="header-actions" id="mobile-menu">
+
       <div class="theme-switch">
         <i class="ph ph-sun"></i>
         <label class="switch">
@@ -34,6 +39,7 @@
       </div>
 
       <div id="user-menu" class="user-menu hidden">
+        <a href="perfil.html"><i class="ph ph-user"></i> Meu Perfil</a>
         <button id="logout-btn"><i class="ph ph-sign-out"></i> Sair</button>
       </div>
 
@@ -43,26 +49,49 @@
     </div>
   </header>
 
-  <main class="container section-card" style="max-width: 500px; margin-top: 4rem;">
-    <h2><i class="ph ph-user-circle"></i> Meu Perfil</h2>
+  <!-- Subnav (igual nas outras páginas) -->
+  <div class="subnav active">
+    <div class="tabs">
+      <a href="index.html" class="tab">Como Funciona</a>
+      <a href="cronometro.html" class="tab">Cronômetro</a>
+      <a href="musica.html" class="tab">Música</a>
+      <a href="estatisticas.html" class="tab">Estatísticas</a>
+    </div>
+  </div>
 
-    <form id="profile-form">
-      <label>Nome:</label>
-      <input type="text" id="full_name" />
+  <main class="perfil-container">
+    <div class="perfil-header">
+      <div class="avatar-wrapper">
+        <img id="user-avatar-preview" src="img/default-avatar.svg" alt="Foto de Perfil">
+        <label for="avatar-input" class="avatar-edit">
+          <i class="ph ph-camera"></i>
+        </label>
+        <input type="file" id="avatar-input" accept="image/*" hidden />
+      </div>
 
-      <label>Localização:</label>
-      <input type="text" id="location" />
+      <h2 id="perfil-display-name">Meu Perfil</h2>
+      <p class="perfil-email" id="perfil-email"></p>
+    </div>
 
-      <label>Idade:</label>
-      <input type="number" id="age" min="1" />
+    <form id="profile-form" class="perfil-form">
 
-      <label>Foto de Perfil:</label>
-      <input type="file" id="avatar-input" accept="image/*" />
+      <section>
+        <h3>Informações Pessoais</h3>
 
-      <button type="submit" class="btn-primary">Salvar Alterações</button>
+        <label>Nome Completo:</label>
+        <input type="text" id="full_name">
+
+        <label>Localização:</label>
+        <input type="text" id="location">
+
+        <label>Idade:</label>
+        <input type="number" id="age" min="1">
+      </section>
+
+      <button type="submit" class="btn-primary full">Salvar Alterações</button>
     </form>
 
-    <button id="delete-account-btn" class="btn-danger" style="margin-top: 1.5rem;">
+    <button id="delete-account-btn" class="btn-danger outline">
       <i class="ph ph-warning"></i> Excluir conta
     </button>
   </main>
@@ -72,7 +101,7 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="./js/theme.js"></script>
   <script type="module" src="./js/header.js"></script>
-  <script type="module" src="./js/profile.js"></script>
+  <script type="module" src="./js/perfil.js"></script>
 </body>
 
 </html>

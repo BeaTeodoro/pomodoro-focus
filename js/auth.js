@@ -5,16 +5,20 @@ const REDIRECT_URL = `${window.location.origin}/index.html`;
 
 // Login com Google (OAuth)
 export async function loginWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${window.location.origin}/index.html`,
-    }
-  });
-
-  if (error) {
-    console.error(error);
-    alert("Erro ao entrar com Google");
+  try {
+    localStorage.setItem("login_method", "google");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: REDIRECT_URL,
+        queryParams: { access_type: "offline", prompt: "consent" },
+      },
+    });
+    if (error) throw error;
+    console.log("✅ Login com Google iniciado…");
+  } catch (err) {
+    console.error("❌ Erro no login com Google:", err?.message || err);
+    alert("Erro ao tentar login com Google: " + (err?.message || err));
   }
 }
 
