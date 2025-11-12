@@ -70,7 +70,7 @@ pomodoro-focus/
 
 ## 🌐 Deploy
 
-🔗 Em breve hospedado no **Vercel**  
+🔗 Hospedado no **Vercel**  
 *(Deploy contínuo integrado ao GitHub.)*
 
 ---
